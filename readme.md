@@ -1,6 +1,6 @@
 # mem [![Build Status](https://travis-ci.org/sindresorhus/mem.svg?branch=master)](https://travis-ci.org/sindresorhus/mem)
 
-> [Memoize](https://en.wikipedia.org/wiki/Memoization) functions - an optimization technique used to speed up consecutive function calls by caching the result of calls with identical inputs
+> [Memoize](https://en.wikipedia.org/wiki/Memoization) functions - An optimization used to speed up consecutive function calls by caching the result of calls with identical input
 
 Requires at least Node.js 0.12, unless you provide your own `cache` store.
 
