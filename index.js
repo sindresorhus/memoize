@@ -3,7 +3,7 @@ module.exports = function (fn, opts) {
 	opts = opts || {};
 
 	var cacheKey = opts.cacheKey || function (x) {
-		if (arguments.length === 1 && x === null || x === undefined || (typeof x !== 'function' && typeof x !== 'object')) {
+		if (arguments.length === 1 && (x === null || x === undefined || (typeof x !== 'function' && typeof x !== 'object'))) {
 			return x;
 		}
 
