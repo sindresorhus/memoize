@@ -12,6 +12,9 @@ test('memoize', t => {
 	t.is(memoized('foo'), 1);
 	t.is(memoized('foo'), 1);
 	t.is(memoized('foo'), 1);
+	t.is(memoized('foo', 'bar'), 2);
+	t.is(memoized('foo', 'bar'), 2);
+	t.is(memoized('foo', 'bar'), 2);
 });
 
 test('memoize with multiple non-primitive arguments', t => {
@@ -21,6 +24,8 @@ test('memoize with multiple non-primitive arguments', t => {
 	t.is(memoized(), 0);
 	t.is(memoized({foo: true}, {bar: false}), 1);
 	t.is(memoized({foo: true}, {bar: false}), 1);
+	t.is(memoized({foo: true}, {bar: false}, {baz: true}), 2);
+	t.is(memoized({foo: true}, {bar: false}, {baz: true}), 2);
 });
 
 test('maxAge option', async t => {
