@@ -109,9 +109,29 @@ Default: `new Map()`
 Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`. You could for example use a `WeakMap` instead.
 
 
-## Related
+## Tips
 
-- [stats-map](https://github.com/SamVerschueren/stats-map) - Cache replacement to track the hits and misses.
+### Cache statistics
+
+If you want to know how many times your cache had a hit or a miss, you can make use of [stats-map](https://github.com/SamVerschueren/stats-map) as a replacement for the default cache.
+
+#### Example
+
+```js
+const mem = require('mem');
+const StatsMap = require('stats-map');
+const got = require('got');
+
+const cache = new StatsMap();
+const memGot = mem(got, {cache});
+
+memGot('sindresorhus.com')
+	.then(() => memGot('sindresorhus.com'))
+	.then(() => memGot('sindresorhus.com'));
+
+console.log(cache.stats);
+//=> {hits: 2, misses: 1}
+```
 
 
 ## License
