@@ -109,6 +109,11 @@ Default: `new Map()`
 Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`. You could for example use a `WeakMap` instead.
 
 
+## Related
+
+- [stats-map](https://github.com/SamVerschueren/stats-map) - Cache replacement to track the hits and misses.
+
+
 ## License
 
 MIT © [Sindre Sorhus](http://sindresorhus.com)
