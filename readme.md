@@ -74,9 +74,9 @@ memGot('sindresorhus.com').then(() => {
 
 ## API
 
-### mem(input, [options])
+### mem(fn, [options])
 
-#### input
+#### fn
 
 Type: `Function`
 
@@ -104,7 +104,17 @@ You could for example change it to only cache on the first argument `x => JSON.s
 Type: `Object`<br>
 Default: `new Map()`
 
-Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`. You could for example use a `WeakMap` instead.
+Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`, and optionally `.clear()`. You could for example use a `WeakMap` instead.
+
+### mem.clear(fn)
+
+Clear all cached data of a memoized function.
+
+#### fn
+
+Type: `Function`
+
+Memoized function.
 
 
 ## Tips

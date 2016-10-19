@@ -1,6 +1,8 @@
 'use strict';
 const mimicFn = require('mimic-fn');
 
+const cacheStore = new WeakMap();
+
 const defaultCacheKey = function (x) {
 	if (arguments.length === 1 && (x === null || x === undefined || (typeof x !== 'function' && typeof x !== 'object'))) {
 		return x;
@@ -16,7 +18,7 @@ module.exports = (fn, opts) => {
 	}, opts);
 
 	const memoized = function () {
-		const cache = memoized.__cache__;
+		const cache = cacheStore.get(memoized);
 		const key = opts.cacheKey.apply(null, arguments);
 
 		if (cache.has(key)) {
@@ -37,9 +39,17 @@ module.exports = (fn, opts) => {
 		return ret;
 	};
 
-	memoized.__cache__ = opts.cache;
-
 	mimicFn(memoized, fn);
 
+	cacheStore.set(memoized, opts.cache);
+
 	return memoized;
+};
+
+module.exports.clear = fn => {
+	const cache = cacheStore.get(fn);
+
+	if (cache && typeof cache.clear === 'function') {
+		cache.clear();
+	}
 };
