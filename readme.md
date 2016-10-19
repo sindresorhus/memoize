@@ -2,8 +2,6 @@
 
 > [Memoize](https://en.wikipedia.org/wiki/Memoization) functions - An optimization used to speed up consecutive function calls by caching the result of calls with identical input
 
-Requires at least Node.js 0.12, unless you provide your own `cache` store.
-
 
 ## Install
 
@@ -80,7 +78,7 @@ memGot('sindresorhus.com').then(() => {
 
 #### input
 
-Type: `function`
+Type: `Function`
 
 Function to be memoized.
 
@@ -88,22 +86,22 @@ Function to be memoized.
 
 ##### maxAge
 
-Type: `number`  
+Type: `number`<br>
 Default: `Infinity`
 
 Milliseconds until the cache expires.
 
 ##### cacheKey
 
-Type: `function`  
+Type: `Function`
 
-Determines the cache key for storing the result based on the function arguments. By default, if there's only one argument and it's a [primitive](https://developer.mozilla.org/en-US/docs/Glossary/Primitive) it's used directly as a key, otherwise it's all the function arguments JSON stringified as an array.
+Determines the cache key for storing the result based on the function arguments. By default, if there's only one argument and it's a [primitive](https://developer.mozilla.org/en-US/docs/Glossary/Primitive), it's used directly as a key, otherwise it's all the function arguments JSON stringified as an array.
 
 You could for example change it to only cache on the first argument `x => JSON.stringify(x)`.
 
 ##### cache
 
-Type: `object`  
+Type: `Object`
 Default: `new Map()`
 
 Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`. You could for example use a `WeakMap` instead.
@@ -136,4 +134,4 @@ console.log(cache.stats);
 
 ## License
 
-MIT © [Sindre Sorhus](http://sindresorhus.com)
+MIT © [Sindre Sorhus](https://sindresorhus.com)

@@ -1,11 +1,11 @@
 import test from 'ava';
 import delay from 'delay';
-import fn from './';
+import m from './';
 
 test('memoize', t => {
 	let i = 0;
 	const f = () => i++;
-	const memoized = fn(f);
+	const memoized = m(f);
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
@@ -19,7 +19,7 @@ test('memoize', t => {
 
 test('memoize with multiple non-primitive arguments', t => {
 	let i = 0;
-	const memoized = fn(() => i++);
+	const memoized = m(() => i++);
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
 	t.is(memoized({foo: true}, {bar: false}), 1);
@@ -31,7 +31,7 @@ test('memoize with multiple non-primitive arguments', t => {
 test('maxAge option', async t => {
 	let i = 0;
 	const f = () => i++;
-	const memoized = fn(f, {maxAge: 100});
+	const memoized = m(f, {maxAge: 100});
 	t.is(memoized(1), 0);
 	t.is(memoized(1), 0);
 	await delay(50);
@@ -43,7 +43,7 @@ test('maxAge option', async t => {
 test('cacheKey option', t => {
 	let i = 0;
 	const f = () => i++;
-	const memoized = fn(f, {cacheKey: x => x});
+	const memoized = m(f, {cacheKey: x => x});
 	t.is(memoized(1), 0);
 	t.is(memoized(1), 0);
 	t.is(memoized(1, 2), 0);
@@ -54,7 +54,7 @@ test('cacheKey option', t => {
 test('cache option', t => {
 	let i = 0;
 	const f = () => i++;
-	const memoized = fn(f, {
+	const memoized = m(f, {
 		cache: new WeakMap(),
 		cacheKey: x => x
 	});
@@ -68,8 +68,12 @@ test('cache option', t => {
 
 test('promise support', async t => {
 	let i = 0;
-	const memoized = fn(() => Promise.resolve(i++));
+	const memoized = m(() => Promise.resolve(i++));
 	t.is(await memoized(), 0);
 	t.is(await memoized(), 0);
 	t.is(await memoized(10), 1);
+});
+
+test('preserves the original function name', t => {
+	t.is(m(function foo() {}).name, 'foo'); // eslint-disable-line func-names, prefer-arrow-callback
 });
