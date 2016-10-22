@@ -142,6 +142,11 @@ console.log(cache.stats);
 ```
 
 
+## Related
+
+- [p-memoize](https://github.com/sindresorhus/p-memoize) - Memoize promise-returning & async functions
+
+
 ## License
 
 MIT © [Sindre Sorhus](https://sindresorhus.com)
