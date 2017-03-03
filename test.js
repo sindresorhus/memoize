@@ -88,3 +88,14 @@ test('.clear()', t => {
 	t.is(memoized(), 1);
 	t.is(memoized(), 1);
 });
+
+test('.clear(fn, [key])', t => {
+	let i = 0;
+	const f = () => i++;
+	const memoized = m(f);
+	t.is(memoized('foo'), 0);
+	t.is(memoized('bar'), 1);
+	m.clear(memoized, ['bar']);
+	t.is(memoized('foo'), 0);
+	t.is(memoized('bar'), 2);
+});

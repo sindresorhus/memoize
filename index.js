@@ -18,7 +18,7 @@ module.exports = (fn, opts) => {
 	}, opts);
 
 	const memoized = function () {
-		const cache = cacheStore.get(memoized);
+		const {cache} = cacheStore.get(memoized);
 		const key = opts.cacheKey.apply(null, arguments);
 
 		if (cache.has(key)) {
@@ -41,13 +41,17 @@ module.exports = (fn, opts) => {
 
 	mimicFn(memoized, fn);
 
-	cacheStore.set(memoized, opts.cache);
+	cacheStore.set(memoized, opts);
 
 	return memoized;
 };
 
-module.exports.clear = fn => {
-	const cache = cacheStore.get(fn);
+module.exports.clear = (fn, key = []) => {
+	const {cache, cacheKey} = cacheStore.get(fn);
+
+	if (Array.isArray(key)) {
+		return cache.delete(cacheKey.apply(null, key));
+	}
 
 	if (cache && typeof cache.clear === 'function') {
 		cache.clear();
