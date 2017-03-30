@@ -106,9 +106,9 @@ Default: `new Map()`
 
 Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`, and optionally `.clear()`. You could for example use a `WeakMap` instead or [`quick-lru`](https://github.com/sindresorhus/quick-lru) for a LRU cache.
 
-### mem.clear(fn)
+### mem.clear(fn, [arguments])
 
-Clear all cached data of a memoized function.
+Without arguments, it clear all cached data of a memoized function
 
 #### fn
 
@@ -116,6 +116,28 @@ Type: `Function`
 
 Memoized function.
 
+#### arguments
+Type: `Array`<br>
+Default: `[]`
+
+You could clear cached data of memoized function only for specific arguments.
+
+```js
+let i = 0;
+const f = () => i++;
+const memoized = mem(f);
+memoized('foo')
+//=> 0
+memoized('bar')
+//=> 1
+
+m.clear(memoized, ['bar']);
+
+memoized('foo')
+//=> 0
+memoized('bar')
+//=> 2
+```
 
 ## Tips
 
