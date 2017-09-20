@@ -74,6 +74,40 @@ test('promise support', async t => {
 	t.is(await memoized(10), 1);
 });
 
+test('do not cache rejected promises', async t => {
+	let i = 0;
+	const memoized = m(() => {
+		i++;
+		if (i === 1) {
+			return Promise.reject(new Error('foo bar'));
+		}
+
+		return Promise.resolve(i);
+	});
+
+	await t.throws(memoized(), 'foo bar');
+	t.is(await memoized(), 2);
+	t.is(await memoized(), 2);
+});
+
+test('cache rejected promises if enabled', async t => {
+	let i = 0;
+	const memoized = m(() => {
+		i++;
+		if (i === 1) {
+			return Promise.reject(new Error('foo bar'));
+		}
+
+		return Promise.resolve(i);
+	}, {
+		cacheRejection: true
+	});
+
+	await t.throws(memoized(), 'foo bar');
+	await t.throws(memoized(), 'foo bar');
+	await t.throws(memoized(), 'foo bar');
+});
+
 test('preserves the original function name', t => {
 	t.is(m(function foo() {}).name, 'foo'); // eslint-disable-line func-names, prefer-arrow-callback
 });
