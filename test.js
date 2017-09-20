@@ -88,3 +88,20 @@ test('.clear()', t => {
 	t.is(memoized(), 1);
 	t.is(memoized(), 1);
 });
+
+test('prototype support', t => {
+	const f = function () {
+		return this.i++;
+	};
+
+	const Unicorn = function () {
+		this.i = 0;
+	};
+	Unicorn.prototype.foo = m(f);
+
+	const unicorn = new Unicorn();
+
+	t.is(unicorn.foo(), 0);
+	t.is(unicorn.foo(), 0);
+	t.is(unicorn.foo(), 0);
+});

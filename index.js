@@ -29,7 +29,7 @@ module.exports = (fn, opts) => {
 			}
 		}
 
-		const ret = fn.apply(null, arguments);
+		const ret = fn.apply(this, arguments);
 
 		cache.set(key, {
 			data: ret,
