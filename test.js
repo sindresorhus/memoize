@@ -92,15 +92,16 @@ test('do not cache rejected promises', async t => {
 
 test('cache rejected promises if enabled', async t => {
 	let i = 0;
-	const memoized = m(() => {
+	const memoized = m(async () => {
 		i++;
+
 		if (i === 1) {
-			return Promise.reject(new Error('foo bar'));
+			throw new Error('foo bar');
 		}
 
-		return Promise.resolve(i);
+		return i;
 	}, {
-		cacheRejection: true
+		cachePromiseRejection: true
 	});
 
 	await t.throws(memoized(), 'foo bar');

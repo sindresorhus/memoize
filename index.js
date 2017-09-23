@@ -16,7 +16,7 @@ module.exports = (fn, opts) => {
 	opts = Object.assign({
 		cacheKey: defaultCacheKey,
 		cache: new Map(),
-		cacheRejection: false
+		cachePromiseRejection: false
 	}, opts);
 
 	const memoized = function () {
@@ -33,21 +33,22 @@ module.exports = (fn, opts) => {
 
 		const ret = fn.apply(null, arguments);
 
-		if (isPromise(ret) && opts.cacheRejection === false) {
-			// Only cache resolved promises unless `cacheRejection` is set to `true`
+		const setData = (key, data) => {
+			cache.set(key, {
+				data,
+				maxAge: Date.now() + (opts.maxAge || 0)
+			});
+		};
+
+		if (isPromise(ret) && opts.cachePromiseRejection === false) {
+			// Only cache resolved promises unless `cachePromiseRejection` is set to `true`
 			ret
 				.then(() => {
-					cache.set(key, {
-						data: ret,
-						maxAge: Date.now() + (opts.maxAge || 0)
-					});
+					setData(key, ret);
 				})
 				.catch(() => { });
 		} else {
-			cache.set(key, {
-				data: ret,
-				maxAge: Date.now() + (opts.maxAge || 0)
-			});
+			setData(key, ret);
 		}
 
 		return ret;
