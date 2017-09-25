@@ -76,13 +76,13 @@ test('promise support', async t => {
 
 test('do not cache rejected promises', async t => {
 	let i = 0;
-	const memoized = m(() => {
+	const memoized = m(async () => {
 		i++;
 		if (i === 1) {
-			return Promise.reject(new Error('foo bar'));
+			throw new Error('foo bar');
 		}
 
-		return Promise.resolve(i);
+		return i;
 	});
 
 	await t.throws(memoized(), 'foo bar');
