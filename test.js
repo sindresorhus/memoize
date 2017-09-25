@@ -1,6 +1,6 @@
 import test from 'ava';
 import delay from 'delay';
-import m from './';
+import m from '.';
 
 test('memoize', t => {
 	let i = 0;
@@ -68,7 +68,7 @@ test('cache option', t => {
 
 test('promise support', async t => {
 	let i = 0;
-	const memoized = m(() => Promise.resolve(i++));
+	const memoized = m(async () => i++);
 	t.is(await memoized(), 0);
 	t.is(await memoized(), 0);
 	t.is(await memoized(10), 1);
@@ -78,6 +78,7 @@ test('do not cache rejected promises', async t => {
 	let i = 0;
 	const memoized = m(async () => {
 		i++;
+
 		if (i === 1) {
 			throw new Error('foo bar');
 		}

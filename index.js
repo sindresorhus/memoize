@@ -46,7 +46,7 @@ module.exports = (fn, opts) => {
 				.then(() => {
 					setData(key, ret);
 				})
-				.catch(() => { });
+				.catch(() => {});
 		} else {
 			setData(key, ret);
 		}

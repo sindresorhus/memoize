@@ -6,7 +6,7 @@
 ## Install
 
 ```
-$ npm install --save mem
+$ npm install mem
 ```
 
 
@@ -22,11 +22,11 @@ const memoized = mem(counter);
 memoized('foo');
 //=> 1
 
-// cached as it's the same arguments
+// Cached as it's the same arguments
 memoized('foo');
 //=> 1
 
-// not cached anymore as the arguments changed
+// Not cached anymore as the arguments changed
 memoized('bar');
 //=> 2
 
@@ -48,7 +48,7 @@ memoized().then(a => {
 	//=> 1
 
 	memoized().then(b => {
-		// the return value didn't increase as it's cached
+		// The return value didn't increase as it's cached
 		console.log(b);
 		//=> 1
 	});
@@ -61,10 +61,10 @@ const got = require('got');
 const memGot = mem(got, {maxAge: 1000});
 
 memGot('sindresorhus.com').then(() => {
-	// this call is cached
+	// This call is cached
 	memGot('sindresorhus.com').then(() => {
 		setTimeout(() => {
-			// this call is not cached as the cache has expired
+			// This call is not cached as the cache has expired
 			memGot('sindresorhus.com').then(() => {});
 		}, 2000);
 	});
