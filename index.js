@@ -1,5 +1,6 @@
 'use strict';
 const mimicFn = require('mimic-fn');
+const isPromise = require('p-is-promise');
 
 const cacheStore = new WeakMap();
 
@@ -14,7 +15,8 @@ const defaultCacheKey = function (x) {
 module.exports = (fn, opts) => {
 	opts = Object.assign({
 		cacheKey: defaultCacheKey,
-		cache: new Map()
+		cache: new Map(),
+		cachePromiseRejection: false
 	}, opts);
 
 	const memoized = function () {
@@ -31,10 +33,23 @@ module.exports = (fn, opts) => {
 
 		const ret = fn.apply(this, arguments);
 
-		cache.set(key, {
-			data: ret,
-			maxAge: Date.now() + (opts.maxAge || 0)
-		});
+		const setData = (key, data) => {
+			cache.set(key, {
+				data,
+				maxAge: Date.now() + (opts.maxAge || 0)
+			});
+		};
+
+		if (isPromise(ret) && opts.cachePromiseRejection === false) {
+			// Only cache resolved promises unless `cachePromiseRejection` is set to `true`
+			ret
+				.then(() => {
+					setData(key, ret);
+				})
+				.catch(() => { });
+		} else {
+			setData(key, ret);
+		}
 
 		return ret;
 	};

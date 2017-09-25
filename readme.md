@@ -106,6 +106,13 @@ Default: `new Map()`
 
 Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`, and optionally `.clear()`. You could for example use a `WeakMap` instead or [`quick-lru`](https://github.com/sindresorhus/quick-lru) for a LRU cache.
 
+##### cachePromiseRejection
+
+Type: `boolean`<br>
+Default: `false`
+
+Cache rejected promises.
+
 ### mem.clear(fn)
 
 Clear all cached data of a memoized function.
