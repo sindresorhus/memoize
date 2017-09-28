@@ -87,8 +87,14 @@ test('do not cache rejected promises', async t => {
 	});
 
 	await t.throws(memoized(), 'foo bar');
-	t.is(await memoized(), 2);
-	t.is(await memoized(), 2);
+
+	const first = memoized();
+	const second = memoized();
+	const third = memoized();
+
+	t.is(await first, 2);
+	t.is(await second, 2);
+	t.is(await third, 2);
 });
 
 test('cache rejected promises if enabled', async t => {

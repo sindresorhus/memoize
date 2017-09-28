@@ -40,15 +40,11 @@ module.exports = (fn, opts) => {
 			});
 		};
 
+		setData(key, ret);
+
 		if (isPromise(ret) && opts.cachePromiseRejection === false) {
-			// Only cache resolved promises unless `cachePromiseRejection` is set to `true`
-			ret
-				.then(() => {
-					setData(key, ret);
-				})
-				.catch(() => {});
-		} else {
-			setData(key, ret);
+			// Remove rejected promises from cache unless `cachePromiseRejection` is set to `true`
+			ret.catch(() => cache.delete(key));
 		}
 
 		return ret;
