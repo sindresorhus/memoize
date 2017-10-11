@@ -104,7 +104,7 @@ You could for example change it to only cache on the first argument `x => JSON.s
 Type: `Object`<br>
 Default: `new Map()`
 
-Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`, and optionally `.clear()`. You could for example use a `WeakMap` instead or [`quick-lru`](https://github.com/sindresorhus/quick-lru) for a LRU cache.
+Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`, `.delete(key)`, and optionally `.clear()`. You could for example use a `WeakMap` instead or [`quick-lru`](https://github.com/sindresorhus/quick-lru) for a LRU cache.
 
 ##### cachePromiseRejection
 
