@@ -29,6 +29,8 @@ module.exports = (fn, opts) => {
 			if (typeof opts.maxAge !== 'number' || Date.now() < c.maxAge) {
 				return c.data;
 			}
+
+			cache.delete(key);
 		}
 
 		const ret = fn.apply(this, arguments);
