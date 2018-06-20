@@ -17,6 +17,62 @@ test('memoize', t => {
 	t.is(memoized('foo', 'bar'), 2);
 });
 
+test('memoize itself is memoized', t => {
+	let i = 0;
+	const f = () => i++;
+	let memoized = m(f);
+	t.is(memoized(), 0);
+	t.is(memoized(), 0);
+	memoized = m(f);
+	t.is(memoized(), 0);
+	t.is(memoized('foo'), 1);
+	t.is(memoized('foo'), 1);
+	memoized = m(f);
+	t.is(memoized('foo'), 1);
+	t.is(memoized('foo', 'bar'), 2);
+	t.is(memoized('foo', 'bar'), 2);
+	memoized = m(f);
+	t.is(memoized('foo', 'bar'), 2);
+
+	// Resolves to same options bag, use memoized version
+	memoized = m(f, {cachePromiseRejection: false});
+	t.is(memoized(), 1);
+	t.is(memoized('foo'), 1);
+	t.is(memoized('foo', 'bar'), 2);
+
+	// Resolves to different options bag, create new memoized version
+	memoized = m(f, {cachePromiseRejection: true});
+	t.is(memoized(), 3);
+	t.is(memoized('foo'), 4);
+	t.is(memoized('foo', 'bar'), 5);
+	memoized = m(f, {cachePromiseRejection: true});
+	t.is(memoized(), 3);
+	t.is(memoized('foo'), 4);
+	t.is(memoized('foo', 'bar'), 5);
+
+	const cache = new Map();
+	// Resolves to different options bag, create new memoized version
+	memoized = m(f, {cache});
+	t.is(memoized(), 6);
+	t.is(memoized('foo'), 7);
+	t.is(memoized('foo', 'bar'), 8);
+	memoized = m(f, {cache});
+	t.is(memoized(), 6);
+	t.is(memoized('foo'), 7);
+	t.is(memoized('foo', 'bar'), 8);
+
+	const cacheKey = (...args) => JSON.stringify(...args);
+	// Resolves to different options bag, create new memoized version
+	memoized = m(f, {cacheKey});
+	t.is(memoized(), 9);
+	t.is(memoized('foo'), 10);
+	t.is(memoized('foo', 'bar'), 11);
+	memoized = m(f, {cacheKey});
+	t.is(memoized(), 9);
+	t.is(memoized('foo'), 10);
+	t.is(memoized('foo', 'bar'), 11);
+});
+
 test('memoize with multiple non-primitive arguments', t => {
 	let i = 0;
 	const memoized = m(() => i++);

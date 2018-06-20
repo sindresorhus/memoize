@@ -2,6 +2,10 @@
 const mimicFn = require('mimic-fn');
 const isPromise = require('p-is-promise');
 
+// Store functions that memoize has previously memoized,
+// so that memoize calls can be cached
+const fnStore = new WeakMap();
+
 const cacheStore = new WeakMap();
 
 const defaultCacheKey = (...args) => {
@@ -25,6 +29,14 @@ module.exports = (fn, options) => {
 		cache: new Map(),
 		cachePromiseRejection: false
 	}, options);
+
+	const fnKey = JSON.stringify(opts);
+	if (fnStore.has(fn)) {
+		const optionsStore = fnStore.get(fn);
+		if (optionsStore.has(fnKey)) {
+			return optionsStore.get(fnKey);
+		}
+	}
 
 	const memoized = function (...args) {
 		const cache = cacheStore.get(memoized);
@@ -62,6 +74,10 @@ module.exports = (fn, options) => {
 	mimicFn(memoized, fn);
 
 	cacheStore.set(memoized, options.cache);
+	if (!fnStore.has(fn)) {
+		fnStore.set(fn, new Map());
+	}
+	fnStore.get(fn)[fnKey] = memoized;
 
 	return memoized;
 };
