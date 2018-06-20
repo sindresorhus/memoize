@@ -4,47 +4,54 @@ const isPromise = require('p-is-promise');
 
 const cacheStore = new WeakMap();
 
-const defaultCacheKey = function (x) {
-	if (arguments.length === 1 && (x === null || x === undefined || (typeof x !== 'function' && typeof x !== 'object'))) {
-		return x;
+const defaultCacheKey = (...args) => {
+	if (args.length === 1) {
+		const [firstArgument] = args;
+		if (
+			firstArgument === null ||
+			firstArgument === undefined ||
+			(typeof firstArgument !== 'function' && typeof firstArgument !== 'object')
+		) {
+			return firstArgument;
+		}
 	}
 
-	return JSON.stringify(arguments);
+	return JSON.stringify(args);
 };
 
-module.exports = (fn, opts) => {
-	opts = Object.assign({
+module.exports = (fn, options) => {
+	options = Object.assign({
 		cacheKey: defaultCacheKey,
 		cache: new Map(),
 		cachePromiseRejection: false
-	}, opts);
+	}, options);
 
-	const memoized = function () {
+	const memoized = function (...args) {
 		const cache = cacheStore.get(memoized);
-		const key = opts.cacheKey.apply(null, arguments);
+		const key = options.cacheKey(...args);
 
 		if (cache.has(key)) {
 			const c = cache.get(key);
 
-			if (typeof opts.maxAge !== 'number' || Date.now() < c.maxAge) {
+			if (typeof options.maxAge !== 'number' || Date.now() < c.maxAge) {
 				return c.data;
 			}
 
 			cache.delete(key);
 		}
 
-		const ret = fn.apply(this, arguments);
+		const ret = fn.call(this, ...args);
 
 		const setData = (key, data) => {
 			cache.set(key, {
 				data,
-				maxAge: Date.now() + (opts.maxAge || 0)
+				maxAge: Date.now() + (options.maxAge || 0)
 			});
 		};
 
 		setData(key, ret);
 
-		if (isPromise(ret) && opts.cachePromiseRejection === false) {
+		if (isPromise(ret) && options.cachePromiseRejection === false) {
 			// Remove rejected promises from cache unless `cachePromiseRejection` is set to `true`
 			ret.catch(() => cache.delete(key));
 		}
@@ -54,7 +61,7 @@ module.exports = (fn, opts) => {
 
 	mimicFn(memoized, fn);
 
-	cacheStore.set(memoized, opts.cache);
+	cacheStore.set(memoized, options.cache);
 
 	return memoized;
 };

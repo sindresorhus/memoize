@@ -40,35 +40,37 @@ memoized('bar');
 const mem = require('mem');
 
 let i = 0;
-const counter = () => Promise.resolve(++i);
+const counter = async () => ++i;
 const memoized = mem(counter);
 
-memoized().then(a => {
-	console.log(a);
+(async () => {
+	console.log(await memoized());
 	//=> 1
 
-	memoized().then(b => {
-		// The return value didn't increase as it's cached
-		console.log(b);
-		//=> 1
-	});
-});
+	// The return value didn't increase as it's cached
+	console.log(await memoized());
+	//=> 1
+})();
 ```
 
 ```js
 const mem = require('mem');
 const got = require('got');
+const delay = require('delay');
+
 const memGot = mem(got, {maxAge: 1000});
 
-memGot('sindresorhus.com').then(() => {
+(async () => {
+	await memGot('sindresorhus.com');
+
 	// This call is cached
-	memGot('sindresorhus.com').then(() => {
-		setTimeout(() => {
-			// This call is not cached as the cache has expired
-			memGot('sindresorhus.com').then(() => {});
-		}, 2000);
-	});
-});
+	await memGot('sindresorhus.com');
+
+	await delay(2000);
+
+	// This call is not cached as the cache has expired
+	await memGot('sindresorhus.com');
+})();
 ```
 
 
@@ -83,6 +85,8 @@ Type: `Function`
 Function to be memoized.
 
 #### options
+
+Type: `Object`
 
 ##### maxAge
 
@@ -140,12 +144,14 @@ const got = require('got');
 const cache = new StatsMap();
 const memGot = mem(got, {cache});
 
-memGot('sindresorhus.com')
-	.then(() => memGot('sindresorhus.com'))
-	.then(() => memGot('sindresorhus.com'));
+(async () => {
+	await memGot('sindresorhus.com');
+	await memGot('sindresorhus.com');
+	await memGot('sindresorhus.com');
 
-console.log(cache.stats);
-//=> {hits: 2, misses: 1}
+	console.log(cache.stats);
+	//=> {hits: 2, misses: 1}
+})();
 ```
 
 
