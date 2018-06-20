@@ -40,6 +40,45 @@ test('maxAge option', async t => {
 	t.is(memoized(1), 1);
 });
 
+test('maxAge option deletes old items', async t => {
+	let i = 0;
+	const f = () => i++;
+	const cache = new Map();
+	const deleted = [];
+	cache.delete = item => deleted.push(item);
+	const memoized = m(f, {maxAge: 100, cache});
+	t.is(memoized(1), 0);
+	t.is(memoized(1), 0);
+	t.is(cache.has(1), true);
+	await delay(50);
+	t.is(memoized(1), 0);
+	t.is(deleted.length, 0);
+	await delay(200);
+	t.is(memoized(1), 1);
+	t.is(deleted.length, 1);
+	t.is(deleted[0], 1);
+});
+
+test('maxAge items are deleted even if function throws', async t => {
+	let i = 0;
+	const f = () => {
+		if (i === 1) {
+			throw new Error('failure');
+		}
+		return i++;
+	};
+	const cache = new Map();
+	const memoized = m(f, {maxAge: 100, cache});
+	t.is(memoized(1), 0);
+	t.is(memoized(1), 0);
+	t.is(cache.size, 1);
+	await delay(50);
+	t.is(memoized(1), 0);
+	await delay(200);
+	t.throws(() => memoized(1), 'failure');
+	t.is(cache.size, 0);
+});
+
 test('cacheKey option', t => {
 	let i = 0;
 	const f = () => i++;
