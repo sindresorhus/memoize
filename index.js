@@ -29,8 +29,16 @@ module.exports = (fn, options) => {
 		cachePromiseRejection: false
 	}, options);
 
+	const {cache} = options;
+
+	const setData = (key, data) => {
+		cache.set(key, {
+			data,
+			maxAge: Date.now() + options.maxAge
+		});
+	};
+
 	const memoized = function (...args) {
-		const cache = cacheStore.get(memoized);
 		const key = options.cacheKey(...args);
 
 		if (cache.has(key)) {
@@ -44,13 +52,6 @@ module.exports = (fn, options) => {
 		}
 
 		const ret = fn.call(this, ...args);
-
-		const setData = (key, data) => {
-			cache.set(key, {
-				data,
-				maxAge: Date.now() + (options.maxAge || 0)
-			});
-		};
 
 		setData(key, ret);
 
