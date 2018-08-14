@@ -5,6 +5,9 @@ const isPromise = require('p-is-promise');
 const cacheStore = new WeakMap();
 
 const defaultCacheKey = (...args) => {
+	if (args.length === 0) {
+		return '__defaultKey';
+	}
 	if (args.length === 1) {
 		const [firstArgument] = args;
 		if (
