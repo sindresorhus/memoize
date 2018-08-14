@@ -30,6 +30,8 @@ module.exports = (fn, options) => {
 	}, options);
 
 	const {cache} = options;
+	const noMaxAge = typeof options.maxAge !== 'number';
+	options.maxAge = options.maxAge || 0;
 
 	const setData = (key, data) => {
 		cache.set(key, {
@@ -44,7 +46,7 @@ module.exports = (fn, options) => {
 		if (cache.has(key)) {
 			const c = cache.get(key);
 
-			if (typeof options.maxAge !== 'number' || Date.now() < c.maxAge) {
+			if (noMaxAge || Date.now() < c.maxAge) {
 				return c.data;
 			}
 
