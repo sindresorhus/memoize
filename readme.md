@@ -2,6 +2,8 @@
 
 > [Memoize](https://en.wikipedia.org/wiki/Memoization) functions - An optimization used to speed up consecutive function calls by caching the result of calls with identical input
 
+Memory is automatically released when an item expires.
+
 
 ## Install
 
