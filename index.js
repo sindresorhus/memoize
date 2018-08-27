@@ -5,6 +5,10 @@ const isPromise = require('p-is-promise');
 const cacheStore = new WeakMap();
 
 const defaultCacheKey = (...args) => {
+	if (args.length === 0) {
+		return '__defaultKey';
+	}
+
 	if (args.length === 1) {
 		const [firstArgument] = args;
 		if (
@@ -26,14 +30,24 @@ module.exports = (fn, options) => {
 		cachePromiseRejection: false
 	}, options);
 
+	const {cache} = options;
+	const noMaxAge = typeof options.maxAge !== 'number';
+	options.maxAge = options.maxAge || 0;
+
+	const setData = (key, data) => {
+		cache.set(key, {
+			data,
+			maxAge: Date.now() + options.maxAge
+		});
+	};
+
 	const memoized = function (...args) {
-		const cache = cacheStore.get(memoized);
 		const key = options.cacheKey(...args);
 
 		if (cache.has(key)) {
 			const c = cache.get(key);
 
-			if (typeof options.maxAge !== 'number' || Date.now() < c.maxAge) {
+			if (noMaxAge || Date.now() < c.maxAge) {
 				return c.data;
 			}
 
@@ -41,13 +55,6 @@ module.exports = (fn, options) => {
 		}
 
 		const ret = fn.call(this, ...args);
-
-		const setData = (key, data) => {
-			cache.set(key, {
-				data,
-				maxAge: Date.now() + (options.maxAge || 0)
-			});
-		};
 
 		setData(key, ret);
 
