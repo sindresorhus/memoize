@@ -1,6 +1,7 @@
 'use strict';
 const mimicFn = require('mimic-fn');
 const isPromise = require('p-is-promise');
+const mapAgeCleaner = require('map-age-cleaner');
 
 const cacheStore = new WeakMap();
 
@@ -30,8 +31,11 @@ module.exports = (fn, options) => {
 		cachePromiseRejection: false
 	}, options);
 
+	if (typeof options.maxAge === 'number') {
+		mapAgeCleaner(options.cache);
+	}
+
 	const {cache} = options;
-	const noMaxAge = typeof options.maxAge !== 'number';
 	options.maxAge = options.maxAge || 0;
 
 	const setData = (key, data) => {
@@ -47,11 +51,7 @@ module.exports = (fn, options) => {
 		if (cache.has(key)) {
 			const c = cache.get(key);
 
-			if (noMaxAge || Date.now() < c.maxAge) {
-				return c.data;
-			}
-
-			cache.delete(key);
+			return c.data;
 		}
 
 		const ret = fn.call(this, ...args);

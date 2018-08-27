@@ -45,7 +45,11 @@ test('maxAge option deletes old items', async t => {
 	const f = () => i++;
 	const cache = new Map();
 	const deleted = [];
-	cache.delete = item => deleted.push(item);
+	const remove = cache.delete.bind(cache);
+	cache.delete = item => {
+		deleted.push(item);
+		return remove(item);
+	};
 	const memoized = m(f, {maxAge: 100, cache});
 	t.is(memoized(1), 0);
 	t.is(memoized(1), 0);
