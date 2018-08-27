@@ -36,6 +36,58 @@ memoized('bar');
 //=> 2
 ```
 
+## Objects and Custom Types
+
+```javascript
+const mem = require('mem');
+
+let i = 0;
+const memoized = mem(() => ++i);
+
+// mem uses JSON.stringify internally to generate cache keys. Objects with the 
+// same property values are treated identically
+memoized({a: 1});
+//=> 1
+
+memoized({a: 1});
+//=> 1
+
+// Note - this may lead to unexpected behavior with certain types of objects
+// For example Regex builtins 
+JSON.stringify(/[A-Z]+/);
+//=> '{}'
+
+memoized(/[A-Z]+/);
+//=> 2
+
+// Additional Regexes also serialize to '{}', and will not function as expected 
+memoized(/^memo$/);
+//=> 2
+
+// If you use types that don't play well with JSON.stringify, define your own cacheKey
+const cacheKey = (regex, string) => regex.toString() + string;
+let j = 0;
+const memRegex = mem(() => ++j, {cacheKey}); 
+
+memRegex(/[A-Z]+/, 'string');
+//=> 0
+
+memRegex(/[A-Z]+/, 'string');
+//=> 0
+
+memRegex(/[A-Z]+/, 'different');
+//=> 1
+
+memRegex(/[A-Z]+/, 'different');
+//=> 1
+
+memRegex(/^memo$/, 'string');
+//=> 2
+
+memRegex(/^memo$/, 'string');
+//=> 2
+```
+
 ##### Works fine with promise returning functions
 
 ```js

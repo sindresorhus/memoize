@@ -34,7 +34,8 @@
 	"dependencies": {
 		"map-age-cleaner": "^0.1.1",
 		"mimic-fn": "^1.0.0",
-		"p-is-promise": "^1.1.0"
+		"p-is-promise": "^1.1.0",
+		"uuid": "^3.3.2"
 	},
 	"devDependencies": {
 		"ava": "*",

@@ -1,9 +1,28 @@
 'use strict';
+
 const mimicFn = require('mimic-fn');
 const isPromise = require('p-is-promise');
 const mapAgeCleaner = require('map-age-cleaner');
+const uuid = require('uuid');
 
 const cacheStore = new WeakMap();
+const TypesMap = new Map();
+
+for (const value of [null, undefined, Infinity, NaN]) {
+	TypesMap.set(value, uuid());
+}
+
+const replacer = function (key, value) {
+	if (TypesMap.has(value)) {
+		return TypesMap.get(value);
+	}
+
+	if (typeof value === 'symbol') {
+		TypesMap.set(value, uuid());
+		return TypesMap.get(value);
+	}
+	return value;
+};
 
 const defaultCacheKey = (...args) => {
 	if (args.length === 0) {
@@ -13,15 +32,14 @@ const defaultCacheKey = (...args) => {
 	if (args.length === 1) {
 		const [firstArgument] = args;
 		if (
-			firstArgument === null ||
-			firstArgument === undefined ||
+			TypesMap.has(firstArgument) ||
 			(typeof firstArgument !== 'function' && typeof firstArgument !== 'object')
 		) {
 			return firstArgument;
 		}
 	}
 
-	return JSON.stringify(args);
+	return JSON.stringify(args, replacer);
 };
 
 module.exports = (fn, options) => {
