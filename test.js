@@ -39,6 +39,23 @@ test('memoize with regexp arguments', t => {
 	t.is(memoized(/Elvin Peng/), 2);
 });
 
+test('memoize with Symbol arguments', t => {
+	let i = 0;
+	const arg1 = Symbol('Sindre Sorhus');
+	const arg2 = Symbol('Elvin Peng');
+	const memoized = m(() => i++);
+	t.is(memoized(), 0);
+	t.is(memoized(), 0);
+	t.is(memoized(arg1), 1);
+	t.is(memoized(arg1), 1);
+	t.is(memoized(arg2), 2);
+	t.is(memoized(arg2), 2);
+	t.is(memoized({foo: arg1}), 3);
+	t.is(memoized({foo: arg1}), 3);
+	t.is(memoized({foo: arg2}), 4);
+	t.is(memoized({foo: arg2}), 4);
+});
+
 test('maxAge option', async t => {
 	let i = 0;
 	const f = () => i++;
