@@ -28,7 +28,7 @@ test('memoize with multiple non-primitive arguments', t => {
 	t.is(memoized({foo: true}, {bar: false}, {baz: true}), 2);
 });
 
-test('memoize with regexp arguments', t => {
+test.failing('memoize with regexp arguments', t => {
 	let i = 0;
 	const memoized = m(() => i++);
 	t.is(memoized(), 0);
@@ -39,10 +39,10 @@ test('memoize with regexp arguments', t => {
 	t.is(memoized(/Elvin Peng/), 2);
 });
 
-test('memoize with Symbol arguments', t => {
+test.failing('memoize with Symbol arguments', t => {
 	let i = 0;
-	const arg1 = Symbol('Sindre Sorhus');
-	const arg2 = Symbol('Elvin Peng');
+	const arg1 = Symbol('fixture1');
+	const arg2 = Symbol('fixture2');
 	const memoized = m(() => i++);
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
