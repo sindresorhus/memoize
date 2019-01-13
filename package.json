@@ -34,11 +34,11 @@
 	"dependencies": {
 		"map-age-cleaner": "^0.1.1",
 		"mimic-fn": "^1.0.0",
-		"p-is-promise": "^1.1.0"
+		"p-is-promise": "^2.0.0"
 	},
 	"devDependencies": {
-		"ava": "*",
-		"delay": "^3.0.0",
-		"xo": "*"
+		"ava": "^1.0.1",
+		"delay": "^4.1.0",
+		"xo": "^0.23.0"
 	}
 }
