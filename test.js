@@ -28,6 +28,34 @@ test('memoize with multiple non-primitive arguments', t => {
 	t.is(memoized({foo: true}, {bar: false}, {baz: true}), 2);
 });
 
+test.failing('memoize with regexp arguments', t => {
+	let i = 0;
+	const memoized = m(() => i++);
+	t.is(memoized(), 0);
+	t.is(memoized(), 0);
+	t.is(memoized(/Sindre Sorhus/), 1);
+	t.is(memoized(/Sindre Sorhus/), 1);
+	t.is(memoized(/Elvin Peng/), 2);
+	t.is(memoized(/Elvin Peng/), 2);
+});
+
+test.failing('memoize with Symbol arguments', t => {
+	let i = 0;
+	const arg1 = Symbol('fixture1');
+	const arg2 = Symbol('fixture2');
+	const memoized = m(() => i++);
+	t.is(memoized(), 0);
+	t.is(memoized(), 0);
+	t.is(memoized(arg1), 1);
+	t.is(memoized(arg1), 1);
+	t.is(memoized(arg2), 2);
+	t.is(memoized(arg2), 2);
+	t.is(memoized({foo: arg1}), 3);
+	t.is(memoized({foo: arg1}), 3);
+	t.is(memoized({foo: arg2}), 4);
+	t.is(memoized({foo: arg2}), 4);
+});
+
 test('maxAge option', async t => {
 	let i = 0;
 	const f = () => i++;
