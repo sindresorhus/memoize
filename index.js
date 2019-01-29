@@ -66,7 +66,11 @@ module.exports = (fn, options) => {
 		return ret;
 	};
 
-	mimicFn(memoized, fn);
+	try {
+		// The call to mimicFn below will throw in some host environments
+		//   See https://github.com/sindresorhus/mimic-fn/issues/10
+		mimicFn(memoized, fn);
+	} catch (error) {}
 
 	cacheStore.set(memoized, options.cache);
 
