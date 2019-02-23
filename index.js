@@ -31,7 +31,7 @@ module.exports = (fn, options) => {
 		cachePromiseRejection: false
 	}, options);
 
-	if (typeof options.maxAge === 'number') {
+	if (typeof options.maxAge === 'number' && options.maxAge > 0) {
 		mapAgeCleaner(options.cache);
 	}
 
@@ -39,9 +39,10 @@ module.exports = (fn, options) => {
 	options.maxAge = options.maxAge || 0;
 
 	const setData = (key, data) => {
+		const maxAge = (options.maxAge > 0) ? Date.now() + options.maxAge : 0;
 		cache.set(key, {
 			data,
-			maxAge: Date.now() + options.maxAge
+			maxAge
 		});
 	};
 
