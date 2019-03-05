@@ -78,6 +78,7 @@ test('maxAge option deletes old items', async t => {
 		deleted.push(item);
 		return remove(item);
 	};
+
 	const memoized = mem(f, {maxAge: 100, cache});
 	t.is(memoized(1), 0);
 	t.is(memoized(1), 0);
@@ -97,8 +98,10 @@ test('maxAge items are deleted even if function throws', async t => {
 		if (i === 1) {
 			throw new Error('failure');
 		}
+
 		return i++;
 	};
+
 	const cache = new Map();
 	const memoized = mem(f, {maxAge: 100, cache});
 	t.is(memoized(1), 0);
@@ -188,7 +191,7 @@ test('cache rejected promises if enabled', async t => {
 });
 
 test('preserves the original function name', t => {
-	t.is(mem(function foo() {}).name, 'foo'); // eslint-disable-line func-names, prefer-arrow-callback
+	t.is(mem(function foo() {}).name, 'foo'); // eslint-disable-line func-names
 });
 
 test('.clear()', t => {
@@ -210,6 +213,7 @@ test('prototype support', t => {
 	const Unicorn = function () {
 		this.i = 0;
 	};
+
 	Unicorn.prototype.foo = mem(f);
 
 	const unicorn = new Unicorn();

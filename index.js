@@ -24,7 +24,7 @@ const defaultCacheKey = (...args) => {
 	return JSON.stringify(args);
 };
 
-module.exports = (fn, options) => {
+const mem = (fn, options) => {
 	options = Object.assign({
 		cacheKey: defaultCacheKey,
 		cache: new Map(),
@@ -76,6 +76,9 @@ module.exports = (fn, options) => {
 
 	return memoized;
 };
+
+module.exports = mem;
+module.exports.default = mem;
 
 module.exports.clear = fn => {
 	const cache = cacheStore.get(fn);
