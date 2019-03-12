@@ -5,13 +5,13 @@ const mapAgeCleaner = require('map-age-cleaner');
 
 const cacheStore = new WeakMap();
 
-const defaultCacheKey = (...args) => {
-	if (args.length === 0) {
+const defaultCacheKey = (...arguments_) => {
+	if (arguments_.length === 0) {
 		return '__defaultKey';
 	}
 
-	if (args.length === 1) {
-		const [firstArgument] = args;
+	if (arguments_.length === 1) {
+		const [firstArgument] = arguments_;
 		if (
 			firstArgument === null ||
 			firstArgument === undefined ||
@@ -21,7 +21,7 @@ const defaultCacheKey = (...args) => {
 		}
 	}
 
-	return JSON.stringify(args);
+	return JSON.stringify(arguments_);
 };
 
 const mem = (fn, options) => {
@@ -45,25 +45,23 @@ const mem = (fn, options) => {
 		});
 	};
 
-	const memoized = function (...args) {
-		const key = options.cacheKey(...args);
+	const memoized = function (...arguments_) {
+		const key = options.cacheKey(...arguments_);
 
 		if (cache.has(key)) {
-			const c = cache.get(key);
-
-			return c.data;
+			return cache.get(key).data;
 		}
 
-		const ret = fn.call(this, ...args);
+		const cacheItem = fn.call(this, ...arguments_);
 
-		setData(key, ret);
+		setData(key, cacheItem);
 
-		if (isPromise(ret) && options.cachePromiseRejection === false) {
+		if (isPromise(cacheItem) && options.cachePromiseRejection === false) {
 			// Remove rejected promises from cache unless `cachePromiseRejection` is set to `true`
-			ret.catch(() => cache.delete(key));
+			cacheItem.catch(() => cache.delete(key));
 		}
 
-		return ret;
+		return cacheItem;
 	};
 
 	try {

@@ -4,8 +4,8 @@ import mem from '.';
 
 test('memoize', t => {
 	let i = 0;
-	const f = () => i++;
-	const memoized = mem(f);
+	const fixture = () => i++;
+	const memoized = mem(fixture);
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
@@ -41,25 +41,25 @@ test.failing('memoize with regexp arguments', t => {
 
 test.failing('memoize with Symbol arguments', t => {
 	let i = 0;
-	const arg1 = Symbol('fixture1');
-	const arg2 = Symbol('fixture2');
+	const argument1 = Symbol('fixture1');
+	const argument2 = Symbol('fixture2');
 	const memoized = mem(() => i++);
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
-	t.is(memoized(arg1), 1);
-	t.is(memoized(arg1), 1);
-	t.is(memoized(arg2), 2);
-	t.is(memoized(arg2), 2);
-	t.is(memoized({foo: arg1}), 3);
-	t.is(memoized({foo: arg1}), 3);
-	t.is(memoized({foo: arg2}), 4);
-	t.is(memoized({foo: arg2}), 4);
+	t.is(memoized(argument1), 1);
+	t.is(memoized(argument1), 1);
+	t.is(memoized(argument2), 2);
+	t.is(memoized(argument2), 2);
+	t.is(memoized({foo: argument1}), 3);
+	t.is(memoized({foo: argument1}), 3);
+	t.is(memoized({foo: argument2}), 4);
+	t.is(memoized({foo: argument2}), 4);
 });
 
 test('maxAge option', async t => {
 	let i = 0;
-	const f = () => i++;
-	const memoized = mem(f, {maxAge: 100});
+	const fixture = () => i++;
+	const memoized = mem(fixture, {maxAge: 100});
 	t.is(memoized(1), 0);
 	t.is(memoized(1), 0);
 	await delay(50);
@@ -70,7 +70,7 @@ test('maxAge option', async t => {
 
 test('maxAge option deletes old items', async t => {
 	let i = 0;
-	const f = () => i++;
+	const fixture = () => i++;
 	const cache = new Map();
 	const deleted = [];
 	const remove = cache.delete.bind(cache);
@@ -79,7 +79,7 @@ test('maxAge option deletes old items', async t => {
 		return remove(item);
 	};
 
-	const memoized = mem(f, {maxAge: 100, cache});
+	const memoized = mem(fixture, {maxAge: 100, cache});
 	t.is(memoized(1), 0);
 	t.is(memoized(1), 0);
 	t.is(cache.has(1), true);
@@ -94,7 +94,7 @@ test('maxAge option deletes old items', async t => {
 
 test('maxAge items are deleted even if function throws', async t => {
 	let i = 0;
-	const f = () => {
+	const fixture = () => {
 		if (i === 1) {
 			throw new Error('failure');
 		}
@@ -103,7 +103,7 @@ test('maxAge items are deleted even if function throws', async t => {
 	};
 
 	const cache = new Map();
-	const memoized = mem(f, {maxAge: 100, cache});
+	const memoized = mem(fixture, {maxAge: 100, cache});
 	t.is(memoized(1), 0);
 	t.is(memoized(1), 0);
 	t.is(cache.size, 1);
@@ -116,8 +116,8 @@ test('maxAge items are deleted even if function throws', async t => {
 
 test('cacheKey option', t => {
 	let i = 0;
-	const f = () => i++;
-	const memoized = mem(f, {cacheKey: x => x});
+	const fixture = () => i++;
+	const memoized = mem(fixture, {cacheKey: x => x});
 	t.is(memoized(1), 0);
 	t.is(memoized(1), 0);
 	t.is(memoized(1, 2), 0);
@@ -127,8 +127,8 @@ test('cacheKey option', t => {
 
 test('cache option', t => {
 	let i = 0;
-	const f = () => i++;
-	const memoized = mem(f, {
+	const fixture = () => i++;
+	const memoized = mem(fixture, {
 		cache: new WeakMap(),
 		cacheKey: x => x
 	});
@@ -196,8 +196,8 @@ test('preserves the original function name', t => {
 
 test('.clear()', t => {
 	let i = 0;
-	const f = () => i++;
-	const memoized = mem(f);
+	const fixture = () => i++;
+	const memoized = mem(fixture);
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
 	mem.clear(memoized);
@@ -206,7 +206,7 @@ test('.clear()', t => {
 });
 
 test('prototype support', t => {
-	const f = function () {
+	const fixture = function () {
 		return this.i++;
 	};
 
@@ -214,7 +214,7 @@ test('prototype support', t => {
 		this.i = 0;
 	};
 
-	Unicorn.prototype.foo = mem(f);
+	Unicorn.prototype.foo = mem(fixture);
 
 	const unicorn = new Unicorn();
 

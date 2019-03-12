@@ -26,7 +26,7 @@ export interface Options<
 	 *
 	 * You could for example change it to only cache on the first argument `x => JSON.stringify(x)`.
 	 */
-	readonly cacheKey?: (...args: ArgumentsType) => CacheKeyType;
+	readonly cacheKey?: (...arguments: ArgumentsType) => CacheKeyType;
 
 	/**
 	 * Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`, `.delete(key)`, and optionally `.clear()`. You could for example use a `WeakMap` instead or [`quick-lru`](https://github.com/sindresorhus/quick-lru) for a LRU cache.
