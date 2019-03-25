@@ -1,5 +1,5 @@
-import {expectType} from 'tsd-check';
-import mem from '.';
+import {expectType} from 'tsd';
+import mem = require('.');
 
 const fn = (string: string) => true;
 
