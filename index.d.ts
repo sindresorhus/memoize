@@ -33,7 +33,7 @@ export interface Options<
 	 *
 	 * @default new Map()
 	 */
-	readonly cache?: CacheStorage<CacheKeyType, { data: ReturnType; maxAge?: number; }>;
+	readonly cache?: CacheStorage<CacheKeyType, { data: ReturnType; maxAge: number; }>;
 
 	/**
 	 * Cache rejected promises.
