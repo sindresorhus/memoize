@@ -111,6 +111,18 @@ test('maxAge items are deleted even if function throws', async t => {
 	t.is(cache.size, 0);
 });
 
+test('maxAge:negative throws exception', t => {
+	let i = 0;
+	const f = () => i++;
+	t.throws(() => mem(f, {maxAge: -1}), 'Option maxAge must be greater than or equal than zero');
+});
+
+test('maxAge:nan throws exception', t => {
+	let i = 0;
+	const f = () => i++;
+	t.throws(() => mem(f, {maxAge: Number.NaN}), 'Option maxAge must be greater than or equal than zero');
+});
+
 test('cacheKey option', t => {
 	let i = 0;
 	const f = () => i++;

@@ -95,7 +95,7 @@ Type: `Object`
 Type: `number`<br>
 Default: `Infinity`
 
-Milliseconds until the cache expires.
+Milliseconds until the cache expires. If value is zero, the cache item will be evicted in the next cleanup stage. If value is negative, `mem` will throw an exception.
 
 ##### cacheKey
 

@@ -31,7 +31,11 @@ module.exports = (fn, options) => {
 		cachePromiseRejection: false
 	}, options);
 
-	if (typeof options.maxAge === 'number' && options.maxAge > 0) {
+	const cacheEvictionEnabled = typeof options.maxAge === 'number';
+	if (cacheEvictionEnabled) {
+		if (options.maxAge < 0 || !isFinite(options.maxAge)) {
+			throw new Error('Option maxAge must be greater than or equal than zero');
+		}
 		mapAgeCleaner(options.cache);
 	}
 
@@ -39,7 +43,7 @@ module.exports = (fn, options) => {
 	options.maxAge = options.maxAge || 0;
 
 	const setData = (key, data) => {
-		const maxAge = (options.maxAge > 0) ? Date.now() + options.maxAge : 0;
+		const maxAge = cacheEvictionEnabled ? Date.now() + options.maxAge : 0;
 		cache.set(key, {
 			data,
 			maxAge
