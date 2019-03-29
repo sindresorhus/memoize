@@ -2,32 +2,13 @@
 const mimicFn = require('mimic-fn');
 const isPromise = require('p-is-promise');
 const mapAgeCleaner = require('map-age-cleaner');
+const ManyKeysMap = require('many-keys-map');
 
 const cacheStore = new WeakMap();
 
-const defaultCacheKey = (...arguments_) => {
-	if (arguments_.length === 0) {
-		return '__defaultKey';
-	}
-
-	if (arguments_.length === 1) {
-		const [firstArgument] = arguments_;
-		if (
-			firstArgument === null ||
-			firstArgument === undefined ||
-			(typeof firstArgument !== 'function' && typeof firstArgument !== 'object')
-		) {
-			return firstArgument;
-		}
-	}
-
-	return JSON.stringify(arguments_);
-};
-
 const mem = (fn, options) => {
 	options = Object.assign({
-		cacheKey: defaultCacheKey,
-		cache: new Map(),
+		cache: new ManyKeysMap(),
 		cachePromiseRejection: false
 	}, options);
 
@@ -45,14 +26,12 @@ const mem = (fn, options) => {
 		});
 	};
 
-	const memoized = function (...arguments_) {
-		const key = options.cacheKey(...arguments_);
-
+	const memoized = function (...key) {
 		if (cache.has(key)) {
 			return cache.get(key).data;
 		}
 
-		const cacheItem = fn.call(this, ...arguments_);
+		const cacheItem = fn.apply(this, key);
 
 		setData(key, cacheItem);
 
