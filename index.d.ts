@@ -31,7 +31,7 @@ declare namespace mem {
 
 		@default new Map()
 		*/
-		readonly cache?: CacheStorage<CacheKeyType, ReturnType>;
+		readonly cache?: CacheStorage<CacheKeyType, {data: ReturnType; maxAge: number}>;
 
 		/**
 		Cache rejected promises.
