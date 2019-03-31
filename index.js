@@ -76,7 +76,7 @@ const mem = (fn, options) => {
 };
 
 module.exports = mem;
-// TODO: remove this in the next major version
+// TODO: Remove this for the next major release
 module.exports.default = mem;
 
 module.exports.clear = fn => {
