@@ -89,7 +89,7 @@ declare const mem: {
 		fn: (...arguments: ArgumentsType) => ReturnType
 	): void;
 
-	// TODO: remove this on next major release
+	// TODO: Remove this for the next major release
 	default: typeof mem;
 };
 
