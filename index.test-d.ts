@@ -1,5 +1,6 @@
-import {expectType} from 'tsd-check';
-import mem from '.';
+import {expectType} from 'tsd';
+// The following import syntax makes sure that the type IntelliSense interop with plain JS isn't broken
+import mem = require('.');
 
 const fn = (string: string) => true;
 
