@@ -10,10 +10,10 @@ expectType<(string: string) => boolean>(
 	mem(
 		fn,
 		{cacheKey: (...arguments_) => arguments_,
-		cache: new Map<[string], { data: boolean; maxAge: number; }>()})
+		cache: new Map<[string], {data: boolean; maxAge: number}>()})
 );
 expectType<(string: string) => boolean>(
-	mem(fn, {cache: new Map<[string], { data: boolean; maxAge: number }>()})
+	mem(fn, {cache: new Map<[string], {data: boolean; maxAge: number}>()})
 );
 expectType<(string: string) => boolean>(mem(fn, {cachePromiseRejection: true}));
 
