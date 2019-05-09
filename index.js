@@ -15,7 +15,7 @@ const defaultCacheKey = (...arguments_) => {
 		if (
 			firstArgument === null ||
 			firstArgument === undefined ||
-			typeof firstArgument === 'function'
+			typeof firstArgument !== 'object'
 		) {
 			return firstArgument;
 		}
