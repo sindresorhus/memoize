@@ -1,7 +1,6 @@
 'use strict';
 const mimicFn = require('mimic-fn');
 const isPromise = require('p-is-promise');
-const mapAgeCleaner = require('map-age-cleaner');
 
 const cacheStore = new WeakMap();
 
@@ -31,30 +30,18 @@ const mem = (fn, options) => {
 		cachePromiseRejection: false
 	}, options);
 
-	if (typeof options.maxAge === 'number') {
-		mapAgeCleaner(options.cache);
-	}
-
 	const {cache} = options;
-	options.maxAge = options.maxAge || 0;
-
-	const setData = (key, data) => {
-		cache.set(key, {
-			data,
-			maxAge: Date.now() + options.maxAge
-		});
-	};
 
 	const memoized = function (...arguments_) {
 		const key = options.cacheKey(...arguments_);
 
 		if (cache.has(key)) {
-			return cache.get(key).data;
+			return cache.get(key);
 		}
 
 		const cacheItem = fn.call(this, ...arguments_);
 
-		setData(key, cacheItem);
+		cache.set(key, cacheItem);
 
 		if (isPromise(cacheItem) && options.cachePromiseRejection === false) {
 			// Remove rejected promises from cache unless `cachePromiseRejection` is set to `true`
