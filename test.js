@@ -1,5 +1,4 @@
 import test from 'ava';
-import delay from 'delay';
 import mem from '.';
 
 test('memoize', t => {
