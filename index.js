@@ -12,7 +12,9 @@ const defaultCacheKey = (...arguments_) => {
 
 	if (arguments_.length === 1) {
 		const [firstArgument] = arguments_;
-		if (typeof firstArgument !== 'object' || firstArgument === null) {
+		const isObject = typeof firstArgument === 'object' && firstArgument !== null;
+		const isPrimitive = !isObject;
+		if (isPrimitive) {
 			return firstArgument;
 		}
 	}
