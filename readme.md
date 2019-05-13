@@ -2,7 +2,7 @@
 
 > [Memoize](https://en.wikipedia.org/wiki/Memoization) functions - An optimization used to speed up consecutive function calls by caching the result of calls with identical input
 
-Memory is automatically released when an item expires.
+The input is cached by reference when it’s not an object and when the argument is only one; it’s cached by value in all other cases (where `JSON.stringify` supports it). In the first case, memory is automatically released when an item expires (thanks to `WeakMap`).
 
 
 ## Install
