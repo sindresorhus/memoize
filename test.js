@@ -26,6 +26,7 @@ test('memoize', t => {
 	t.is(memoized(true), 7);
 	t.is(memoized(true), 7);
 
+	// Ensure that functions are stored by reference and not by "value" (e.g. their `.toString()` representation)
 	t.is(memoized(() => i++), 8);
 	t.is(memoized(() => i++), 9);
 });
