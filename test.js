@@ -23,11 +23,11 @@ test('memoize', t => {
 	t.is(memoized(undefined), 5);
 	t.is(memoized(fixture), 6);
 	t.is(memoized(fixture), 6);
-	t.is(memoized(true), 6);
-	t.is(memoized(true), 6);
+	t.is(memoized(true), 7);
+	t.is(memoized(true), 7);
 
-	t.is(memoized(() => i++), 7);
 	t.is(memoized(() => i++), 8);
+	t.is(memoized(() => i++), 9);
 });
 
 test('memoize with multiple non-primitive arguments', t => {
