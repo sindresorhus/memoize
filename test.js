@@ -15,6 +15,20 @@ test('memoize', t => {
 	t.is(memoized('foo', 'bar'), 2);
 	t.is(memoized('foo', 'bar'), 2);
 	t.is(memoized('foo', 'bar'), 2);
+	t.is(memoized(1), 3);
+	t.is(memoized(1), 3);
+	t.is(memoized(null), 4);
+	t.is(memoized(null), 4);
+	t.is(memoized(undefined), 5);
+	t.is(memoized(undefined), 5);
+	t.is(memoized(fixture), 6);
+	t.is(memoized(fixture), 6);
+	t.is(memoized(true), 7);
+	t.is(memoized(true), 7);
+
+	// Ensure that functions are stored by reference and not by "value" (e.g. their `.toString()` representation)
+	t.is(memoized(() => i++), 8);
+	t.is(memoized(() => i++), 9);
 });
 
 test('memoize with multiple non-primitive arguments', t => {
