@@ -2,8 +2,6 @@
 
 > [Memoize](https://en.wikipedia.org/wiki/Memoization) functions - An optimization used to speed up consecutive function calls by caching the result of calls with identical input
 
-Memory is automatically released when an item expires.
-
 
 ## Install
 
@@ -55,26 +53,6 @@ const memoized = mem(counter);
 })();
 ```
 
-```js
-const mem = require('mem');
-const got = require('got');
-const delay = require('delay');
-
-const memGot = mem(got, {maxAge: 1000});
-
-(async () => {
-	await memGot('sindresorhus.com');
-
-	// This call is cached
-	await memGot('sindresorhus.com');
-
-	await delay(2000);
-
-	// This call is not cached as the cache has expired
-	await memGot('sindresorhus.com');
-})();
-```
-
 
 ## API
 
@@ -90,13 +68,6 @@ Function to be memoized.
 
 Type: `Object`
 
-##### maxAge
-
-Type: `number`<br>
-Default: `Infinity`
-
-Milliseconds until the cache expires.
-
 ##### cacheKey
 
 Type: `Function`
@@ -110,7 +81,11 @@ You could for example change it to only cache on the first argument `x => JSON.s
 Type: `Object`<br>
 Default: `new Map()`
 
-Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`, `.delete(key)`, and optionally `.clear()`. You could for example use a `WeakMap` instead or [`quick-lru`](https://github.com/sindresorhus/quick-lru) for a LRU cache.
+Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`, `.delete(key)`, and optionally `.clear()`. For example uou could use:
+
+- [`quick-lru`](https://github.com/sindresorhus/quick-lru) for a LRU cache;
+- [`expiry-map`](https://github.com/SamVerschueren/expiry-map) to set an expiration date;
+- `WeakMap` for automatic garbage collection (you'll also need to set `cacheKey: x => x` for this to work).
 
 ##### cachePromiseRejection
 
