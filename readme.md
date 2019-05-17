@@ -88,7 +88,7 @@ Function to be memoized.
 
 #### options
 
-Type: `Object`
+Type: `object`
 
 ##### maxAge
 
@@ -107,7 +107,7 @@ You could for example change it to only cache on the first argument `x => JSON.s
 
 ##### cache
 
-Type: `Object`<br>
+Type: `object`<br>
 Default: `new Map()`
 
 Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`, `.delete(key)`, and optionally `.clear()`. You could for example use a `WeakMap` instead or [`quick-lru`](https://github.com/sindresorhus/quick-lru) for a LRU cache.

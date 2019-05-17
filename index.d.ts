@@ -88,9 +88,6 @@ declare const mem: {
 	clear<ArgumentsType extends unknown[], ReturnType extends unknown>(
 		fn: (...arguments: ArgumentsType) => ReturnType
 	): void;
-
-	// TODO: Remove this for the next major release
-	default: typeof mem;
 };
 
 export = mem;

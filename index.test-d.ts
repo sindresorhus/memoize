@@ -1,5 +1,4 @@
 import {expectType} from 'tsd';
-// The following import syntax makes sure that the type IntelliSense interop with plain JS isn't broken
 import mem = require('.');
 
 const fn = (string: string) => true;
@@ -16,6 +15,6 @@ expectType<(string: string) => boolean>(
 expectType<(string: string) => boolean>(
 	mem(fn, {cache: new Map<[string], {data: boolean; maxAge: number}>()})
 );
-expectType<(string: string) => boolean>(mem(fn, {cachePromiseRejection: true}));
+expectType<(string: string) => boolean>(mem(fn, {cachePromiseRejection: false}));
 
 mem.clear(fn);
