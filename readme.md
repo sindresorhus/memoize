@@ -115,7 +115,7 @@ Use a different cache storage. Must implement the following methods: `.has(key)`
 ##### cachePromiseRejection
 
 Type: `boolean`<br>
-Default: `false`
+Default: `true`
 
 Cache rejected promises.
 

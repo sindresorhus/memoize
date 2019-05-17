@@ -162,7 +162,7 @@ test('promise support', async t => {
 	t.is(await memoized(10), 1);
 });
 
-test('do not cache rejected promises', async t => {
+test('cachePromiseRejection option', async t => {
 	let i = 0;
 	const memoized = mem(async () => {
 		i++;
@@ -172,6 +172,8 @@ test('do not cache rejected promises', async t => {
 		}
 
 		return i;
+	}, {
+		cachePromiseRejection: false
 	});
 
 	await t.throwsAsync(memoized(), 'foo bar');

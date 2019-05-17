@@ -36,7 +36,7 @@ declare namespace mem {
 		/**
 		Cache rejected promises.
 
-		@default false
+		@default true
 		*/
 		readonly cachePromiseRejection?: boolean;
 	}

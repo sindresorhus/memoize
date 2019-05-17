@@ -26,7 +26,7 @@ const mem = (fn, options) => {
 	options = Object.assign({
 		cacheKey: defaultCacheKey,
 		cache: new Map(),
-		cachePromiseRejection: false
+		cachePromiseRejection: true
 	}, options);
 
 	if (typeof options.maxAge === 'number') {
