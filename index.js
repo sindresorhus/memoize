@@ -22,41 +22,34 @@ const defaultCacheKey = (...arguments_) => {
 	return JSON.stringify(arguments_);
 };
 
-const mem = (fn, options) => {
-	options = {
-		cacheKey: defaultCacheKey,
-		cache: new Map(),
-		cachePromiseRejection: true,
-		...options
-	};
+const mem = (fn, options = {}) => {
+	const {
+		cacheKey = defaultCacheKey,
+		cache = new Map(),
+		cachePromiseRejection = true,
+		maxAge
+	} = options;
 
-	if (typeof options.maxAge === 'number') {
-		mapAgeCleaner(options.cache);
+	if (typeof maxAge === 'number') {
+		mapAgeCleaner(cache);
 	}
 
-	const {cache} = options;
-	options.maxAge = options.maxAge || 0;
-
-	const setData = (key, data) => {
-		cache.set(key, {
-			data,
-			maxAge: Date.now() + options.maxAge
-		});
-	};
-
 	const memoized = function (...arguments_) {
-		const key = options.cacheKey(...arguments_);
+		const key = cacheKey(...arguments_);
 
 		if (cache.has(key)) {
-			return cache.get(key).data;
+			return maxAge ? cache.get(key).data : cache.get(key);
 		}
 
 		const cacheItem = fn.call(this, ...arguments_);
 
-		setData(key, cacheItem);
+		cache.set(key, maxAge ? {
+			data: cacheItem,
+			maxAge: Date.now() + maxAge
+		} : cacheItem);
 
-		if (isPromise(cacheItem) && options.cachePromiseRejection === false) {
-			// Remove rejected promises from cache unless `cachePromiseRejection` is set to `true`
+		if (isPromise(cacheItem) && cachePromiseRejection === false) {
+			// Remove rejected promises from cache if `cachePromiseRejection` is set to `false`
 			cacheItem.catch(() => cache.delete(key));
 		}
 
@@ -69,7 +62,7 @@ const mem = (fn, options) => {
 		mimicFn(memoized, fn);
 	} catch (_) {}
 
-	cacheStore.set(memoized, options.cache);
+	cacheStore.set(memoized, cache);
 
 	return memoized;
 };
