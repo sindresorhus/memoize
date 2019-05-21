@@ -49,7 +49,6 @@ const mem = (fn, options = {}) => {
 		} : cacheItem);
 
 		if (isPromise(cacheItem) && cachePromiseRejection === false) {
-			// Remove rejected promises from cache if `cachePromiseRejection` is set to `false`
 			cacheItem.catch(() => cache.delete(key));
 		}
 
