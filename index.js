@@ -41,7 +41,7 @@ const mem = (fn, options = {}) => {
 			return maxAge ? cache.get(key).data : cache.get(key);
 		}
 
-		const cacheItem = fn.call(this, ...arguments_);
+		const cacheItem = fn.apply(this, arguments_);
 
 		cache.set(key, maxAge ? {
 			data: cacheItem,
