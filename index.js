@@ -22,14 +22,12 @@ const defaultCacheKey = (...arguments_) => {
 	return JSON.stringify(arguments_);
 };
 
-const mem = (fn, options = {}) => {
-	const {
-		cacheKey = defaultCacheKey,
-		cache = new Map(),
-		cachePromiseRejection = true,
-		maxAge
-	} = options;
-
+const mem = (fn, {
+	cacheKey = defaultCacheKey,
+	cache = new Map(),
+	cachePromiseRejection = true,
+	maxAge
+} = {}) => {
 	if (typeof maxAge === 'number') {
 		mapAgeCleaner(cache);
 	}
