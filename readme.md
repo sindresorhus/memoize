@@ -78,7 +78,7 @@ const memGot = mem(got, {maxAge: 1000});
 
 ## API
 
-### mem(fn, [options])
+### mem(fn, options?)
 
 #### fn
 
@@ -162,6 +162,14 @@ const memGot = mem(got, {cache});
 - [p-memoize](https://github.com/sindresorhus/p-memoize) - Memoize promise-returning & async functions
 
 
-## License
+---
 
-MIT © [Sindre Sorhus](https://sindresorhus.com)
+<div align="center">
+	<b>
+		<a href="https://tidelift.com/subscription/pkg/npm-mem?utm_source=npm-mem&utm_medium=referral&utm_campaign=readme">Get professional support for this package with a Tidelift subscription</a>
+	</b>
+	<br>
+	<sub>
+		Tidelift helps make open source sustainable for maintainers while giving companies<br>assurances about security, maintenance, and licensing for their dependencies.
+	</sub>
+</div>
