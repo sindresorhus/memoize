@@ -1,5 +1,5 @@
 declare namespace mem {
-	interface CacheStorage<KeyType extends unknown, ValueType extends unknown> {
+	interface CacheStorage<KeyType, ValueType> {
 		has(key: KeyType): boolean;
 		get(key: KeyType): ValueType | undefined;
 		set(key: KeyType, value: ValueType): void;
@@ -9,8 +9,8 @@ declare namespace mem {
 
 	interface Options<
 		ArgumentsType extends unknown[],
-		CacheKeyType extends unknown,
-		ReturnType extends unknown
+		CacheKeyType,
+		ReturnType
 	> {
 		/**
 		Milliseconds until the cache expires.
@@ -73,8 +73,8 @@ declare const mem: {
 	*/
 	<
 		ArgumentsType extends unknown[],
-		ReturnType extends unknown,
-		CacheKeyType extends unknown
+		ReturnType,
+		CacheKeyType
 	>(
 		fn: (...arguments: ArgumentsType) => ReturnType,
 		options?: mem.Options<ArgumentsType, CacheKeyType, ReturnType>
@@ -85,7 +85,7 @@ declare const mem: {
 
 	@param fn - Memoized function.
 	*/
-	clear<ArgumentsType extends unknown[], ReturnType extends unknown>(
+	clear<ArgumentsType extends unknown[], ReturnType>(
 		fn: (...arguments: ArgumentsType) => ReturnType
 	): void;
 };
