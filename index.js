@@ -36,15 +36,15 @@ const mem = (fn, {
 		const key = cacheKey(...arguments_);
 
 		if (cache.has(key)) {
-			return maxAge ? cache.get(key).data : cache.get(key);
+			return cache.get(key).data;
 		}
 
 		const cacheItem = fn.apply(this, arguments_);
 
-		cache.set(key, maxAge ? {
+		cache.set(key, {
 			data: cacheItem,
-			maxAge: Date.now() + maxAge
-		} : cacheItem);
+			maxAge: maxAge ? Date.now() + maxAge : Infinity
+		});
 
 		if (isPromise(cacheItem) && cachePromiseRejection === false) {
 			cacheItem.catch(() => cache.delete(key));
