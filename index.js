@@ -1,31 +1,12 @@
 'use strict';
 const mimicFn = require('mimic-fn');
-const isPromise = require('p-is-promise');
 const mapAgeCleaner = require('map-age-cleaner');
 
 const cacheStore = new WeakMap();
 
-const defaultCacheKey = (...arguments_) => {
-	if (arguments_.length === 0) {
-		return '__defaultKey';
-	}
-
-	if (arguments_.length === 1) {
-		const [firstArgument] = arguments_;
-		const isObject = typeof firstArgument === 'object' && firstArgument !== null;
-		const isPrimitive = !isObject;
-		if (isPrimitive) {
-			return firstArgument;
-		}
-	}
-
-	return JSON.stringify(arguments_);
-};
-
 const mem = (fn, {
-	cacheKey = defaultCacheKey,
+	cacheKey = ([firstArgument]) => firstArgument,
 	cache = new Map(),
-	cachePromiseRejection = true,
 	maxAge
 } = {}) => {
 	if (typeof maxAge === 'number') {
@@ -33,7 +14,7 @@ const mem = (fn, {
 	}
 
 	const memoized = function (...arguments_) {
-		const key = cacheKey(...arguments_);
+		const key = cacheKey(arguments_);
 
 		if (cache.has(key)) {
 			return cache.get(key).data;
@@ -45,10 +26,6 @@ const mem = (fn, {
 			data: cacheItem,
 			maxAge: maxAge ? Date.now() + maxAge : Infinity
 		});
-
-		if (isPromise(cacheItem) && cachePromiseRejection === false) {
-			cacheItem.catch(() => cache.delete(key));
-		}
 
 		return cacheItem;
 	};

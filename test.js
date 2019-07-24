@@ -1,5 +1,6 @@
 import test from 'ava';
 import delay from 'delay';
+import serializeJavascript from 'serialize-javascript';
 import mem from '.';
 
 test('memoize', t => {
@@ -9,31 +10,42 @@ test('memoize', t => {
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
+	t.is(memoized(undefined), 0);
+	t.is(memoized(undefined), 0);
 	t.is(memoized('foo'), 1);
 	t.is(memoized('foo'), 1);
 	t.is(memoized('foo'), 1);
-	t.is(memoized('foo', 'bar'), 2);
-	t.is(memoized('foo', 'bar'), 2);
-	t.is(memoized('foo', 'bar'), 2);
-	t.is(memoized(1), 3);
-	t.is(memoized(1), 3);
-	t.is(memoized(null), 4);
-	t.is(memoized(null), 4);
-	t.is(memoized(undefined), 5);
-	t.is(memoized(undefined), 5);
-	t.is(memoized(fixture), 6);
-	t.is(memoized(fixture), 6);
-	t.is(memoized(true), 7);
-	t.is(memoized(true), 7);
+	t.is(memoized('foo', 'bar'), 1);
+	t.is(memoized('foo', 'bar'), 1);
+	t.is(memoized('foo', 'bar'), 1);
+	t.is(memoized(1), 2);
+	t.is(memoized(1), 2);
+	t.is(memoized(null), 3);
+	t.is(memoized(null), 3);
+	t.is(memoized(fixture), 4);
+	t.is(memoized(fixture), 4);
+	t.is(memoized(true), 5);
+	t.is(memoized(true), 5);
 
 	// Ensure that functions are stored by reference and not by "value" (e.g. their `.toString()` representation)
-	t.is(memoized(() => i++), 8);
-	t.is(memoized(() => i++), 9);
+	t.is(memoized(() => i++), 6);
+	t.is(memoized(() => i++), 7);
+});
+
+test('cacheKey option', t => {
+	let i = 0;
+	const fixture = () => i++;
+	const memoized = mem(fixture, {cacheKey: ([firstArgument]) => String(firstArgument)});
+	t.is(memoized(1), 0);
+	t.is(memoized(1), 0);
+	t.is(memoized('1'), 0);
+	t.is(memoized('2'), 1);
+	t.is(memoized(2), 1);
 });
 
 test('memoize with multiple non-primitive arguments', t => {
 	let i = 0;
-	const memoized = mem(() => i++);
+	const memoized = mem(() => i++, {cacheKey: JSON.stringify});
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
 	t.is(memoized({foo: true}, {bar: false}), 1);
@@ -42,9 +54,9 @@ test('memoize with multiple non-primitive arguments', t => {
 	t.is(memoized({foo: true}, {bar: false}, {baz: true}), 2);
 });
 
-test.failing('memoize with regexp arguments', t => {
+test('memoize with regexp arguments', t => {
 	let i = 0;
-	const memoized = mem(() => i++);
+	const memoized = mem(() => i++, {cacheKey: serializeJavascript});
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
 	t.is(memoized(/Sindre Sorhus/), 1);
@@ -53,7 +65,7 @@ test.failing('memoize with regexp arguments', t => {
 	t.is(memoized(/Elvin Peng/), 2);
 });
 
-test.failing('memoize with Symbol arguments', t => {
+test('memoize with Symbol arguments', t => {
 	let i = 0;
 	const argument1 = Symbol('fixture1');
 	const argument2 = Symbol('fixture2');
@@ -64,10 +76,6 @@ test.failing('memoize with Symbol arguments', t => {
 	t.is(memoized(argument1), 1);
 	t.is(memoized(argument2), 2);
 	t.is(memoized(argument2), 2);
-	t.is(memoized({foo: argument1}), 3);
-	t.is(memoized({foo: argument1}), 3);
-	t.is(memoized({foo: argument2}), 4);
-	t.is(memoized({foo: argument2}), 4);
 });
 
 test('maxAge option', async t => {
@@ -128,23 +136,12 @@ test('maxAge items are deleted even if function throws', async t => {
 	t.is(cache.size, 0);
 });
 
-test('cacheKey option', t => {
-	let i = 0;
-	const fixture = () => i++;
-	const memoized = mem(fixture, {cacheKey: x => x});
-	t.is(memoized(1), 0);
-	t.is(memoized(1), 0);
-	t.is(memoized(1, 2), 0);
-	t.is(memoized(2), 1);
-	t.is(memoized(2, 1), 1);
-});
-
 test('cache option', t => {
 	let i = 0;
 	const fixture = () => i++;
 	const memoized = mem(fixture, {
 		cache: new WeakMap(),
-		cacheKey: x => x
+		cacheKey: ([firstArgument]) => firstArgument
 	});
 	const foo = {};
 	const bar = {};
@@ -160,50 +157,6 @@ test('promise support', async t => {
 	t.is(await memoized(), 0);
 	t.is(await memoized(), 0);
 	t.is(await memoized(10), 1);
-});
-
-test('cachePromiseRejection option', async t => {
-	let i = 0;
-	const memoized = mem(async () => {
-		i++;
-
-		if (i === 1) {
-			throw new Error('foo bar');
-		}
-
-		return i;
-	}, {
-		cachePromiseRejection: false
-	});
-
-	await t.throwsAsync(memoized(), 'foo bar');
-
-	const first = memoized();
-	const second = memoized();
-	const third = memoized();
-
-	t.is(await first, 2);
-	t.is(await second, 2);
-	t.is(await third, 2);
-});
-
-test('cache rejected promises if enabled', async t => {
-	let i = 0;
-	const memoized = mem(async () => {
-		i++;
-
-		if (i === 1) {
-			throw new Error('foo bar');
-		}
-
-		return i;
-	}, {
-		cachePromiseRejection: true
-	});
-
-	await t.throwsAsync(memoized(), 'foo bar');
-	await t.throwsAsync(memoized(), 'foo bar');
-	await t.throwsAsync(memoized(), 'foo bar');
 });
 
 test('preserves the original function name', t => {

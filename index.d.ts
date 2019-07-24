@@ -24,7 +24,7 @@ declare namespace mem {
 
 		You could for example change it to only cache on the first argument `x => JSON.stringify(x)`.
 		*/
-		readonly cacheKey?: (...arguments: ArgumentsType) => CacheKeyType;
+		readonly cacheKey?: (arguments: ArgumentsType) => CacheKeyType;
 
 		/**
 		Use a different cache storage. You could for example use a `WeakMap` instead or [`quick-lru`](https://github.com/sindresorhus/quick-lru) for a LRU cache.
@@ -32,13 +32,6 @@ declare namespace mem {
 		@default new Map()
 		*/
 		readonly cache?: CacheStorage<CacheKeyType, {data: ReturnType; maxAge: number}>;
-
-		/**
-		Cache rejected promises.
-
-		@default true
-		*/
-		readonly cachePromiseRejection?: boolean;
 	}
 }
 
