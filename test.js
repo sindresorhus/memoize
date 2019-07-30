@@ -238,3 +238,9 @@ test('prototype support', t => {
 	t.is(unicorn.foo(), 0);
 	t.is(unicorn.foo(), 0);
 });
+
+test('mem.clear() throws when called with a plain function', t => {
+	t.throws(() => {
+		mem.clear(() => {});
+	}, 'Can\'t clear a function that was not memoized!');
+});
