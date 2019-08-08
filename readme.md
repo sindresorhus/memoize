@@ -104,10 +104,14 @@ Milliseconds until the cache expires.
 ##### cacheKey
 
 Type: `Function`
+Default: `_arguments => _arguments[0]`
+Example: `_arguments => JSON.stringify(_arguments)`
 
-Determines the cache key for storing the result based on the function arguments. By default, only the first argument is used, as is, as the `key` of the `cache` `Map`.
+Determines the cache key for storing the result based on the function arguments. By default, **only the first argument is considered**.
 
-You change it to cache **all** the arguments by value with `JSON.stringify`, if they are compatible:
+A `cacheKey` function can return any type supported by `Map` (or whatever structure you use in the `cache` option).
+
+You can have it cache **all** the arguments by value with `JSON.stringify`, if they are compatible:
 
 ```js
 mem(function_, {cacheKey: JSON.stringify})
