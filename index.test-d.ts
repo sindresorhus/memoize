@@ -9,12 +9,11 @@ expectType<(string: string) => boolean>(mem(fn, {cacheKey: (...arguments_) => ar
 expectType<(string: string) => boolean>(
 	mem(
 		fn,
-		{cacheKey: (...arguments_) => arguments_,
+		{cacheKey: (arguments_) => arguments_,
 		cache: new Map<[string], {data: boolean; maxAge: number}>()})
 );
 expectType<(string: string) => boolean>(
 	mem(fn, {cache: new Map<[string], {data: boolean; maxAge: number}>()})
 );
-expectType<(string: string) => boolean>(mem(fn, {cachePromiseRejection: false}));
 
 mem.clear(fn);

@@ -2,7 +2,9 @@
 
 > [Memoize](https://en.wikipedia.org/wiki/Memoization) functions - An optimization used to speed up consecutive function calls by caching the result of calls with identical input
 
-Memory is automatically released when an item expires.
+Memory is automatically released when an item expires or the cache is cleared.
+
+By default, **only the first argument is considered** and it only works with [primitives](https://developer.mozilla.org/en-US/docs/Glossary/Primitive). If you need to cache multiple arguments or cache `object`s _by value_, use the `cacheKey` option.
 
 
 ## Install
@@ -24,15 +26,19 @@ const memoized = mem(counter);
 memoized('foo');
 //=> 1
 
-// Cached as it's the same arguments
+// Cached as it's the same argument
 memoized('foo');
 //=> 1
 
-// Not cached anymore as the arguments changed
+// Not cached anymore as the argument changed
 memoized('bar');
 //=> 2
 
 memoized('bar');
+//=> 2
+
+// Only the first argument is considered by default
+memoized('bar', 'foo');
 //=> 2
 ```
 
@@ -100,10 +106,26 @@ Milliseconds until the cache expires.
 ##### cacheKey
 
 Type: `Function`
+Default: `arguments_ => arguments_[0]`
+Example: `arguments_ => JSON.stringify(arguments_)`
 
-Determines the cache key for storing the result based on the function arguments. By default, if there's only one argument and it's a [primitive](https://developer.mozilla.org/en-US/docs/Glossary/Primitive), it's used directly as a key (if it's a `function`, its reference will be used as key), otherwise it's all the function arguments JSON stringified as an array.
+Determines the cache key for storing the result based on the function arguments. By default, **only the first argument is considered**.
 
-You could for example change it to only cache on the first argument `x => JSON.stringify(x)`.
+A `cacheKey` function can return any type supported by `Map` (or whatever structure you use in the `cache` option).
+
+You can have it cache **all** the arguments by value with `JSON.stringify`, if they are compatible:
+
+```js
+mem(function_, {cacheKey: JSON.stringify});
+```
+
+Or you can use a more full-featured serializer like [serialize-javascript](https://github.com/yahoo/serialize-javascript) to add support for `RegExp`, `Date` and so on.
+
+```js
+const serializeJavascript = require('serialize-javascript');
+
+mem(function_, {cacheKey: serializeJavascript});
+```
 
 ##### cache
 
@@ -111,13 +133,6 @@ Type: `object`<br>
 Default: `new Map()`
 
 Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`, `.delete(key)`, and optionally `.clear()`. You could for example use a `WeakMap` instead or [`quick-lru`](https://github.com/sindresorhus/quick-lru) for a LRU cache.
-
-##### cachePromiseRejection
-
-Type: `boolean`<br>
-Default: `true`
-
-Cache rejected promises.
 
 ### mem.clear(fn)
 
