@@ -34,13 +34,13 @@
 	],
 	"dependencies": {
 		"map-age-cleaner": "^0.1.3",
-		"mimic-fn": "^2.1.0"
+		"mimic-fn": "^3.0.0"
 	},
 	"devDependencies": {
-		"ava": "^1.4.1",
+		"ava": "^2.4.0",
 		"delay": "^4.1.0",
-		"serialize-javascript": "^1.7.0",
-		"tsd": "^0.7.3",
-		"xo": "^0.24.0"
+		"serialize-javascript": "^2.1.0",
+		"tsd": "^0.10.0",
+		"xo": "^0.25.3"
 	}
 }

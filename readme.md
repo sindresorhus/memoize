@@ -4,7 +4,7 @@
 
 Memory is automatically released when an item expires or the cache is cleared.
 
-By default, **only the first argument is considered** and it only works with [primitives](https://developer.mozilla.org/en-US/docs/Glossary/Primitive). If you need to cache multiple arguments or cache `object`s _by value_, use the `cacheKey` option.
+By default, **only the first argument is considered** and it only works with [primitives](https://developer.mozilla.org/en-US/docs/Glossary/Primitive). If you need to cache multiple arguments or cache `object`s *by value*, use the `cacheKey` option.
 
 
 ## Install
@@ -98,15 +98,15 @@ Type: `object`
 
 ##### maxAge
 
-Type: `number`<br>
+Type: `number`\
 Default: `Infinity`
 
 Milliseconds until the cache expires.
 
 ##### cacheKey
 
-Type: `Function`
-Default: `arguments_ => arguments_[0]`
+Type: `Function`\
+Default: `arguments_ => arguments_[0]`\
 Example: `arguments_ => JSON.stringify(arguments_)`
 
 Determines the cache key for storing the result based on the function arguments. By default, **only the first argument is considered**.
@@ -116,12 +116,15 @@ A `cacheKey` function can return any type supported by `Map` (or whatever struct
 You can have it cache **all** the arguments by value with `JSON.stringify`, if they are compatible:
 
 ```js
+const mem = require('mem');
+
 mem(function_, {cacheKey: JSON.stringify});
 ```
 
 Or you can use a more full-featured serializer like [serialize-javascript](https://github.com/yahoo/serialize-javascript) to add support for `RegExp`, `Date` and so on.
 
 ```js
+const mem = require('mem');
 const serializeJavascript = require('serialize-javascript');
 
 mem(function_, {cacheKey: serializeJavascript});
@@ -129,7 +132,7 @@ mem(function_, {cacheKey: serializeJavascript});
 
 ##### cache
 
-Type: `object`<br>
+Type: `object`\
 Default: `new Map()`
 
 Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`, `.delete(key)`, and optionally `.clear()`. You could for example use a `WeakMap` instead or [`quick-lru`](https://github.com/sindresorhus/quick-lru) for a LRU cache.
