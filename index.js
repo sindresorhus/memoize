@@ -43,6 +43,10 @@ const mem = (fn, {
 
 module.exports = mem;
 
+module.exports.has = fn => {
+	return cacheStore.has(fn);
+}
+
 module.exports.clear = fn => {
 	if (!cacheStore.has(fn)) {
 		throw new Error('Can\'t clear a function that was not memoized!');
