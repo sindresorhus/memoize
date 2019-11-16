@@ -3,16 +3,16 @@ import mem = require('.');
 
 const fn = (string: string) => true;
 
-expectType<(string: string) => boolean>(mem(fn));
-expectType<(string: string) => boolean>(mem(fn, {maxAge: 1}));
-expectType<(string: string) => boolean>(mem(fn, {cacheKey: (...arguments_) => arguments_}));
-expectType<(string: string) => boolean>(
+expectType<typeof fn>(mem(fn));
+expectType<typeof fn>(mem(fn, {maxAge: 1}));
+expectType<typeof fn>(mem(fn, {cacheKey: (...arguments_) => arguments_}));
+expectType<typeof fn>(
 	mem(
 		fn,
 		{cacheKey: (arguments_) => arguments_,
 		cache: new Map<[string], {data: boolean; maxAge: number}>()})
 );
-expectType<(string: string) => boolean>(
+expectType<typeof fn>(
 	mem(fn, {cache: new Map<[string], {data: boolean; maxAge: number}>()})
 );
 
