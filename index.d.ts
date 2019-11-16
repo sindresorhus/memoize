@@ -88,11 +88,12 @@ declare const mem: {
 	<
 		ArgumentsType extends unknown[],
 		ReturnType,
-		CacheKeyType
+		CacheKeyType,
+		FunctionToMemoize = (...arguments: ArgumentsType) => ReturnType
 	>(
-		fn: (...arguments: ArgumentsType) => ReturnType,
+		fn: FunctionToMemoize,
 		options?: mem.Options<ArgumentsType, CacheKeyType, ReturnType>
-	): (...arguments: ArgumentsType) => ReturnType;
+	): FunctionToMemoize;
 
 	/**
 	Clear all cached data of a memoized function.
