@@ -174,6 +174,31 @@ const memGot = mem(got, {cache});
 })();
 ```
 
+### WeakMap cache with multiple arguments
+
+If you want to memoize a function of multiple object arguments, you can use [deep-weak-map](https://github.com/futpib/deep-weak-map) as a replacement for the default cache.
+
+#### Example
+
+```js
+const mem = require('mem');
+const DeepWeakMap = require('deep-weak-map');
+const filterObject = require('filter-obj');
+
+const cache = new DeepWeakMap();
+const cacheKey = ([object, filterFunction]) => [object, filterFunction];
+const memFilterObject = mem(filterObject, {cache, cacheKey});
+
+const object = {
+	foo: true,
+	bar: false
+};
+const filterFunction = (key, value) => Boolean(value);
+
+console.log(memFilterObject(object, filterFunction) === memFilterObject(object, filterFunction));
+//=> true
+```
+
 
 ## Related
 
