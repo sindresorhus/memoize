@@ -176,7 +176,7 @@ const memGot = mem(got, {cache});
 
 ### WeakMap cache with multiple arguments
 
-If you want to memoize a function of multiple object arguments, you can use [deep-weak-map](https://github.com/futpib/deep-weak-map) as a replacement for the default cache.
+If you want to memoize a function with multiple object arguments, you can use [deep-weak-map](https://github.com/futpib/deep-weak-map) as a replacement for the default cache.
 
 #### Example
 
