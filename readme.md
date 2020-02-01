@@ -179,9 +179,9 @@ const memGot = mem(got, {cache});
 If you want to memoize a function with multiple arguments, you can use [deep-weak-map](https://github.com/futpib/deep-weak-map) as a replacement for the default cache.
 
 You might prefer [`WeakMap`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap)-based approach over [`JSON.stringify` or other serialization](#cachekey) when:
-* Meaningful serialization is impossible (like with functions)
-* You do not want to define serialization for a complex structure
-* Serialization process is too expensive or serialized object is too big to retain
+- Meaningful serialization is impossible (like with functions)
+- You do not want to define serialization for a complex structure
+- The serialization process is too expensive or the serialized object is too big to retain
 
 But keep in mind that [`WeakMap`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap) does not allow primitive data types as keys (only `object`s and `function`s are allowed).
 
