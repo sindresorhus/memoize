@@ -81,6 +81,31 @@ const memGot = mem(got, {maxAge: 1000});
 })();
 ```
 
+### Caching strategy
+
+By default, only the first argument is compared via exact equality (`===`) to determine whether a call is identical.
+
+```js
+const power = mem((a, b) => Math.power(a, b));
+
+power(2, 2); // 4 (stored in cache with the key `2`)
+power(2, 3); // 4 (retrieved from cache at key `2`)
+```
+
+You will have to use the `cache` and `cacheKey` options appropriate to your function. In this specific case this could work:
+
+```js
+const power = mem((a, b) => Math.power(a, b), {
+  cacheKey: arguments_ => arguments_.join(',')
+});
+
+power(2, 2); // 4 (stored in cache with the key `'2,2'`)
+power(2, 3); // 4 (stored in cache with the key `'2,3'`)
+```
+
+More advanced examples follow.
+
+####
 
 ## API
 
