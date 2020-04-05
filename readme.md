@@ -105,7 +105,26 @@ power(2, 3); // 4 (stored in cache with the key `'2,3'`)
 
 More advanced examples follow.
 
-####
+#### Example: Options-like argument
+
+If your function accepts an object, it won't be memoized out of the box:
+
+```js
+const heavyMemoizedOperation = mem(heavyOperation);
+
+heavyMemoizedOperation({full: true}); // Stored in cache with the object as key
+heavyMemoizedOperation({full: true}); // Stored in cache with the object as key, again
+// The objects look the same but for JS they're two different objects
+```
+
+You might want to serialize or hash them, for example using `JSON.stringify` or something like serialize-javascript](https://github.com/yahoo/serialize-javascript), which can also serialize `RegExp`, `Date` and so on.
+
+```js
+const heavyMemoizedOperation = mem(heavyOperation, {cacheKey: JSON.stringify});
+
+heavyMemoizedOperation({full: true}); // Stored in cache with the key `'{"full":true}'` (a string)
+heavyMemoizedOperation({full: true}); // Retrieved from cache
+```
 
 ## API
 
