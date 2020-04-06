@@ -88,8 +88,8 @@ By default, only the first argument is compared via exact equality (`===`) to de
 ```js
 const power = mem((a, b) => Math.power(a, b));
 
-power(2, 2); // 4 (stored in cache with the key `2`)
-power(2, 3); // 4 (retrieved from cache at key `2`)
+power(2, 2); // => 4, stored in cache with the key 2 (number)
+power(2, 3); // => 4, retrieved from cache at key 2 (number), it's wrong
 ```
 
 You will have to use the `cache` and `cacheKey` options appropriate to your function. In this specific case this could work:
@@ -99,8 +99,8 @@ const power = mem((a, b) => Math.power(a, b), {
   cacheKey: arguments_ => arguments_.join(',')
 });
 
-power(2, 2); // 4 (stored in cache with the key `'2,2'`)
-power(2, 3); // 4 (stored in cache with the key `'2,3'`)
+power(2, 2); // => 4, stored in cache with the key '2,2' (both arguments as one string)
+power(2, 3); // => 8, stored in cache with the key '2,3'
 ```
 
 More advanced examples follow.
@@ -117,14 +117,44 @@ heavyMemoizedOperation({full: true}); // Stored in cache with the object as key,
 // The objects look the same but for JS they're two different objects
 ```
 
-You might want to serialize or hash them, for example using `JSON.stringify` or something like serialize-javascript](https://github.com/yahoo/serialize-javascript), which can also serialize `RegExp`, `Date` and so on.
+You might want to serialize or hash them, for example using `JSON.stringify` or something like [serialize-javascript](https://github.com/yahoo/serialize-javascript), which can also serialize `RegExp`, `Date` and so on.
 
 ```js
 const heavyMemoizedOperation = mem(heavyOperation, {cacheKey: JSON.stringify});
 
-heavyMemoizedOperation({full: true}); // Stored in cache with the key `'{"full":true}'` (a string)
+heavyMemoizedOperation({full: true}); // Stored in cache with the key '[{"full":true}]' (string)
 heavyMemoizedOperation({full: true}); // Retrieved from cache
 ```
+
+The same solution also works if it accepts multiple serializable objects:
+
+```js
+const heavyMemoizedOperation = mem(heavyOperation, {cacheKey: JSON.stringify});
+
+heavyMemoizedOperation('hello', {full: true}); // Stored in cache with the key '["hello",{"full":true}]' (string)
+heavyMemoizedOperation('hello', {full: true}); // Retrieved from cache
+```
+
+#### Example: Multiple non-serializable arguments
+
+If your function accepts multiple arguments that aren't supported by `JSON.stringify` (e.g. DOM elements and functions), you can instead extend the initial exact equality (`===`) to work on multiple arguments using [`many-keys-map`](https://github.com/fregante/many-keys-map)
+
+```js
+const ManyKeysMap = require('many-keys-map');
+
+const addListener = (emitter, eventName, listener) => emitter.on(eventName, listener);
+const addOneListener = mem(addListener, {
+	cacheKey: arguments_ => arguments_, // Use *all* the arguments as key
+	cache: new ManyKeysMap() // Correctly handles all the arguments for exact equality
+});
+
+addOneListener(header, 'click', console.log); // `addListener` is run, and it's cached with the `arguments` array as key
+addOneListener(header, 'click', console.log); // `addListener` is not run again
+addOneListener(mainContent, 'load', console.log); // `addListener` is run, and it's cached with the `arguments` array as key
+```
+
+Better yet, if your function’s arguments are compatible with `WeakMap`, you should use [deep-weak-map](https://github.com/futpib/deep-weak-map) instead of `many-keys-map`. This will help avoid memory leaks.
+
 
 ## API
 
@@ -156,23 +186,6 @@ Example: `arguments_ => JSON.stringify(arguments_)`
 Determines the cache key for storing the result based on the function arguments. By default, **only the first argument is considered**.
 
 A `cacheKey` function can return any type supported by `Map` (or whatever structure you use in the `cache` option).
-
-You can have it cache **all** the arguments by value with `JSON.stringify`, if they are compatible:
-
-```js
-const mem = require('mem');
-
-mem(function_, {cacheKey: JSON.stringify});
-```
-
-Or you can use a more full-featured serializer like [serialize-javascript](https://github.com/yahoo/serialize-javascript) to add support for `RegExp`, `Date` and so on.
-
-```js
-const mem = require('mem');
-const serializeJavascript = require('serialize-javascript');
-
-mem(function_, {cacheKey: serializeJavascript});
-```
 
 ##### cache
 
