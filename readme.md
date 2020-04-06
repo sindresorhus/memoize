@@ -4,7 +4,7 @@
 
 Memory is automatically released when an item expires or the cache is cleared.
 
-By default, **only the first argument is considered** and it only works with [primitives](https://developer.mozilla.org/en-US/docs/Glossary/Primitive). If you need to cache multiple arguments or cache `object`s *by value*, use the `cacheKey` option.
+By default, **only the first argument is considered** and it only works with [primitives](https://developer.mozilla.org/en-US/docs/Glossary/Primitive). If you need to cache multiple arguments or cache `object`s *by value*, have a look at alternative [caching strategies][caching-strategy] below.
 
 
 ## Install
@@ -187,12 +187,16 @@ Determines the cache key for storing the result based on the function arguments.
 
 A `cacheKey` function can return any type supported by `Map` (or whatever structure you use in the `cache` option).
 
+Refer to [Caching strategies][caching-strategy] section for more information.
+
 ##### cache
 
 Type: `object`\
 Default: `new Map()`
 
 Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`, `.delete(key)`, and optionally `.clear()`. You could for example use a `WeakMap` instead or [`quick-lru`](https://github.com/sindresorhus/quick-lru) for a LRU cache.
+
+Refer to [Caching strategies][caching-strategy] section for more information.
 
 ### mem.clear(fn)
 
