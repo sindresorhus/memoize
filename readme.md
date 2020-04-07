@@ -92,7 +92,7 @@ power(2, 2); // => 4, stored in cache with the key 2 (number)
 power(2, 3); // => 4, retrieved from cache at key 2 (number), it's wrong
 ```
 
-You will have to use the `cache` and `cacheKey` options appropriate to your function. In this specific case this could work:
+You will have to use the `cache` and `cacheKey` options appropriate to your function. In this specific case, the following could work:
 
 ```js
 const power = mem((a, b) => Math.power(a, b), {
@@ -137,12 +137,13 @@ heavyMemoizedOperation('hello', {full: true}); // Retrieved from cache
 
 #### Example: Multiple non-serializable arguments
 
-If your function accepts multiple arguments that aren't supported by `JSON.stringify` (e.g. DOM elements and functions), you can instead extend the initial exact equality (`===`) to work on multiple arguments using [`many-keys-map`](https://github.com/fregante/many-keys-map)
+If your function accepts multiple arguments that aren't supported by `JSON.stringify` (e.g. DOM elements and functions), you can instead extend the initial exact equality (`===`) to work on multiple arguments using [`many-keys-map`](https://github.com/fregante/many-keys-map):
 
 ```js
 const ManyKeysMap = require('many-keys-map');
 
 const addListener = (emitter, eventName, listener) => emitter.on(eventName, listener);
+
 const addOneListener = mem(addListener, {
 	cacheKey: arguments_ => arguments_, // Use *all* the arguments as key
 	cache: new ManyKeysMap() // Correctly handles all the arguments for exact equality
@@ -153,7 +154,7 @@ addOneListener(header, 'click', console.log); // `addListener` is not run again
 addOneListener(mainContent, 'load', console.log); // `addListener` is run, and it's cached with the `arguments` array as key
 ```
 
-Better yet, if your function’s arguments are compatible with `WeakMap`, you should use [deep-weak-map](https://github.com/futpib/deep-weak-map) instead of `many-keys-map`. This will help avoid memory leaks.
+Better yet, if your function’s arguments are compatible with `WeakMap`, you should use [`deep-weak-map`](https://github.com/futpib/deep-weak-map) instead of `many-keys-map`. This will help avoid memory leaks.
 
 
 ## API
@@ -187,7 +188,7 @@ Determines the cache key for storing the result based on the function arguments.
 
 A `cacheKey` function can return any type supported by `Map` (or whatever structure you use in the `cache` option).
 
-Refer to [Caching strategies](#caching-strategy) section for more information.
+Refer to the [caching strategies](#caching-strategy) section for more information.
 
 ##### cache
 
@@ -196,7 +197,7 @@ Default: `new Map()`
 
 Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`, `.delete(key)`, and optionally `.clear()`. You could for example use a `WeakMap` instead or [`quick-lru`](https://github.com/sindresorhus/quick-lru) for a LRU cache.
 
-Refer to [Caching strategies](#caching-strategy) section for more information.
+Refer to the [caching strategies](#caching-strategy) section for more information.
 
 ### mem.clear(fn)
 
