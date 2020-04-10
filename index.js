@@ -6,9 +6,16 @@ const cacheStore = new WeakMap();
 
 const mem = (fn, {
 	cacheKey = ([firstArgument]) => firstArgument,
-	cache = new Map(),
+	cache,
 	maxAge
 } = {}) => {
+	// Automatically use WeakMap unless the user provided their own cache
+	let weakCache;
+	if (!cache) {
+		weakCache = new WeakCache();		
+		cache = new Map();
+	}
+
 	if (typeof maxAge === 'number') {
 		mapAgeCleaner(cache);
 	}
@@ -16,13 +23,18 @@ const mem = (fn, {
 	const memoized = function (...arguments_) {
 		const key = cacheKey(arguments_);
 
-		if (cache.has(key)) {
-			return cache.get(key).data;
+		// Prefer WeakMap if the key allows it
+		const bestCache = weakCache && key && (typeof key === 'object' || typeof key === 'function') ?
+			weakCache :
+			cache;
+
+		if (bestCache.has(key)) {
+			return bestCache.get(key).data;
 		}
 
 		const cacheItem = fn.apply(this, arguments_);
 
-		cache.set(key, {
+		bestCache.set(key, {
 			data: cacheItem,
 			maxAge: maxAge ? Date.now() + maxAge : Infinity
 		});
