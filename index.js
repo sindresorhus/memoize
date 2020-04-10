@@ -4,17 +4,14 @@ const mapAgeCleaner = require('map-age-cleaner');
 
 const cacheStore = new WeakMap();
 
-const mem = (fn, {
-	cacheKey = ([firstArgument]) => firstArgument,
-	cache,
-	maxAge
-} = {}) => {
+const mem = (fn, options = {}) => {
 	// Automatically use WeakMap unless the user provided their own cache
-	let weakCache;
-	if (!cache) {
-		weakCache = new WeakMap();
-		cache = new Map();
-	}
+	const weakCache = options.cache || new WeakMap();
+	const {
+		cacheKey = ([firstArgument]) => firstArgument,
+		cache = new Map(),
+		maxAge
+	} = options;
 
 	if (typeof maxAge === 'number') {
 		mapAgeCleaner(cache);
