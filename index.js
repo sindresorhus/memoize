@@ -21,7 +21,7 @@ const mem = (fn, options = {}) => {
 		const key = cacheKey(arguments_);
 
 		// Prefer WeakMap if the key allows it
-		const bestCache = weakCache && key && (typeof key === 'object' || typeof key === 'function') ?
+		const bestCache = key && (typeof key === 'object' || typeof key === 'function') ?
 			weakCache :
 			cache;
 
