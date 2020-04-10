@@ -12,7 +12,7 @@ const mem = (fn, {
 	// Automatically use WeakMap unless the user provided their own cache
 	let weakCache;
 	if (!cache) {
-		weakCache = new WeakCache();		
+		weakCache = new WeakMap();
 		cache = new Map();
 	}
 
