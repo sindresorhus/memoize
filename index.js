@@ -4,11 +4,15 @@ const mapAgeCleaner = require('map-age-cleaner');
 
 const cacheStore = new WeakMap();
 
-const mem = (fn, {
-	cacheKey = ([firstArgument]) => firstArgument,
-	cache = new Map(),
-	maxAge
-} = {}) => {
+const mem = (fn, options = {}) => {
+	// Automatically use WeakMap unless the user provided their own cache
+	const weakCache = options.cache || new WeakMap();
+	const {
+		cacheKey = ([firstArgument]) => firstArgument,
+		cache = new Map(),
+		maxAge
+	} = options;
+
 	if (typeof maxAge === 'number') {
 		mapAgeCleaner(cache);
 	}
@@ -16,13 +20,18 @@ const mem = (fn, {
 	const memoized = function (...arguments_) {
 		const key = cacheKey(arguments_);
 
-		if (cache.has(key)) {
-			return cache.get(key).data;
+		// Prefer WeakMap if the key allows it
+		const bestCache = key && (typeof key === 'object' || typeof key === 'function') ?
+			weakCache :
+			cache;
+
+		if (bestCache.has(key)) {
+			return bestCache.get(key).data;
 		}
 
 		const cacheItem = fn.apply(this, arguments_);
 
-		cache.set(key, {
+		bestCache.set(key, {
 			data: cacheItem,
 			maxAge: maxAge ? Date.now() + maxAge : Infinity
 		});
