@@ -6,13 +6,11 @@ Memory is automatically released when an item expires or the cache is cleared.
 
 By default, **only the first argument is considered** and it only works with [primitives](https://developer.mozilla.org/en-US/docs/Glossary/Primitive). If you need to cache multiple arguments or cache `object`s *by value*, have a look at alternative [caching strategies](#caching-strategy) below.
 
-
 ## Install
 
 ```
 $ npm install mem
 ```
-
 
 ## Usage
 
@@ -69,15 +67,15 @@ const delay = require('delay');
 const memGot = mem(got, {maxAge: 1000});
 
 (async () => {
-	await memGot('sindresorhus.com');
+	await memGot('https://sindresorhus.com');
 
 	// This call is cached
-	await memGot('sindresorhus.com');
+	await memGot('https://sindresorhus.com');
 
 	await delay(2000);
 
 	// This call is not cached as the cache has expired
-	await memGot('sindresorhus.com');
+	await memGot('https://sindresorhus.com');
 })();
 ```
 
@@ -156,7 +154,6 @@ addOneListener(mainContent, 'load', console.log); // `addListener` is run, and i
 
 Better yet, if your function’s arguments are compatible with `WeakMap`, you should use [`deep-weak-map`](https://github.com/futpib/deep-weak-map) instead of `many-keys-map`. This will help avoid memory leaks.
 
-
 ## API
 
 ### mem(fn, options?)
@@ -209,7 +206,6 @@ Type: `Function`
 
 Memoized function.
 
-
 ## Tips
 
 ### Cache statistics
@@ -227,20 +223,18 @@ const cache = new StatsMap();
 const memGot = mem(got, {cache});
 
 (async () => {
-	await memGot('sindresorhus.com');
-	await memGot('sindresorhus.com');
-	await memGot('sindresorhus.com');
+	await memGot('https://sindresorhus.com');
+	await memGot('https://sindresorhus.com');
+	await memGot('https://sindresorhus.com');
 
 	console.log(cache.stats);
 	//=> {hits: 2, misses: 1}
 })();
 ```
 
-
 ## Related
 
 - [p-memoize](https://github.com/sindresorhus/p-memoize) - Memoize promise-returning & async functions
-
 
 ---
 
