@@ -25,8 +25,9 @@ const mem = (fn, options = {}) => {
 			weakCache :
 			cache;
 
-		if (bestCache.has(key)) {
-			return bestCache.get(key).data;
+		const cached = bestCache.get(key);
+		if (cached) {
+			return cached.data;
 		}
 
 		const cacheItem = fn.apply(this, arguments_);
