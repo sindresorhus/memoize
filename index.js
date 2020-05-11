@@ -8,7 +8,7 @@ const mem = (fn, options = {}) => {
 	// Automatically use WeakMap unless the user provided their own cache
 	const weakCache = options.cache || new WeakMap();
 	const {
-		cacheKey = ([firstArgument]) => firstArgument,
+		cacheKey,
 		cache = new Map(),
 		maxAge
 	} = options;
@@ -18,7 +18,7 @@ const mem = (fn, options = {}) => {
 	}
 
 	const memoized = function (...arguments_) {
-		const key = cacheKey(arguments_);
+		const key = cacheKey ? cacheKey(arguments_) : arguments_[0];
 
 		// Prefer WeakMap if the key allows it
 		const bestCache = key && (typeof key === 'object' || typeof key === 'function') ?
