@@ -190,9 +190,9 @@ Refer to the [caching strategies](#caching-strategy) section for more informatio
 ##### cache
 
 Type: `object`\
-Default: `new Map()`, but it also intelligently uses `new WeakMap()` whenevever possible
+Default: `new Map()`
 
-Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`, `.delete(key)`, and optionally `.clear()`. You could for example use [`quick-lru`](https://github.com/sindresorhus/quick-lru) for a LRU cache.
+Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`, `.delete(key)`, and optionally `.clear()`. You could for example use a `WeakMap` instead or [`quick-lru`](https://github.com/sindresorhus/quick-lru) for a LRU cache.
 
 Refer to the [caching strategies](#caching-strategy) section for more information.
 
