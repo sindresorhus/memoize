@@ -14,7 +14,7 @@ const mem = (fn, {
 	}
 
 	const memoized = function (...arguments_) {
-		const key = cacheKey? cacheKey(arguments_) : arguments_[0];
+		const key = cacheKey ? cacheKey(arguments_) : arguments_[0];
 
 		const cacheItem = cache.get(key);
 		if (cacheItem) {
