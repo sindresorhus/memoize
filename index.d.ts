@@ -90,7 +90,7 @@ declare const mem: {
 		ReturnType,
 		CacheKeyType,
 		FunctionToMemoize = (...arguments: ArgumentsType) => ReturnType
-		>(
+	>(
 		fn: FunctionToMemoize,
 		options?: mem.Options<ArgumentsType, CacheKeyType, ReturnType>
 	): FunctionToMemoize;
@@ -118,7 +118,7 @@ declare const mem: {
 		ReturnType,
 		CacheKeyType,
 		FunctionToMemoize = (...arguments: ArgumentsType) => ReturnType
-		>(
+	>(
 		options?: mem.Options<ArgumentsType, CacheKeyType, ReturnType>
 	): (
 		target: FunctionToMemoize,
