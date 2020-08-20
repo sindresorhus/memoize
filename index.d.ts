@@ -11,7 +11,7 @@ declare namespace mem {
 		ArgumentsType extends unknown[],
 		CacheKeyType,
 		ReturnType
-		> {
+	> {
 		/**
 		Milliseconds until the cache expires.
 
