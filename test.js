@@ -160,7 +160,23 @@ test('promise support', async t => {
 });
 
 test('preserves the original function name', t => {
-	t.is(mem(function foo() {}).name, 'foo'); // eslint-disable-line func-names
+	t.is(mem(function foo() { }).name, 'foo'); // eslint-disable-line func-names
+});
+
+test('.mixin()', t => {
+	class TestClass {
+		constructor() {
+			this.i = 0;
+		}
+
+		counter() {
+			return ++this.i;
+		}
+	}
+
+	mem.mixin()(TestClass.prototype.counter, 'counter', TestClass.prototype);
+
+	t.is(new TestClass().counter(), 1);
 });
 
 test('.clear()', t => {
@@ -194,6 +210,6 @@ test('prototype support', t => {
 
 test('mem.clear() throws when called with a plain function', t => {
 	t.throws(() => {
-		mem.clear(() => {});
+		mem.clear(() => { });
 	}, 'Can\'t clear a function that was not memoized!');
 });

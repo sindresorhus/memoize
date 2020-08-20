@@ -11,7 +11,7 @@ declare namespace mem {
 		ArgumentsType extends unknown[],
 		CacheKeyType,
 		ReturnType
-	> {
+		> {
 		/**
 		Milliseconds until the cache expires.
 
@@ -90,10 +90,41 @@ declare const mem: {
 		ReturnType,
 		CacheKeyType,
 		FunctionToMemoize = (...arguments: ArgumentsType) => ReturnType
-	>(
+		>(
 		fn: FunctionToMemoize,
 		options?: mem.Options<ArgumentsType, CacheKeyType, ReturnType>
 	): FunctionToMemoize;
+
+	/**
+	Returns a decorator which memoizes the function provided.
+
+	@example
+	```
+	const mem = require('mem');
+
+	class Example {
+		constructor() {
+			this.i = 0;
+		}
+
+		@mem.mixin();
+		counter() {
+			return ++this.i;
+		}
+	}
+	```
+	*/
+	mixin<ArgumentsType extends unknown[],
+		ReturnType,
+		CacheKeyType,
+		FunctionToMemoize = (...arguments: ArgumentsType) => ReturnType
+		>(
+		options?: mem.Options<ArgumentsType, CacheKeyType, ReturnType>
+	): (
+		target: FunctionToMemoize,
+		propertyKey: string,
+		descriptor: PropertyDescriptor
+	) => FunctionToMemoize;
 
 	/**
 	Clear all cached data of a memoized function.

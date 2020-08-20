@@ -196,6 +196,31 @@ Use a different cache storage. Must implement the following methods: `.has(key)`
 
 Refer to the [caching strategies](#caching-strategy) section for more information.
 
+### mem.mixin(options)
+
+Returns a decorator which memoizes the function provided.
+
+#### options
+
+Type: `object`
+
+Same as options for `mem()`.
+
+```js
+const mem = require('mem');
+
+class Example {
+	constructor() {
+		this.i = 0;
+	}
+
+	@mem.mixin();
+	counter() {
+		return ++this.i;
+	}
+}
+```
+
 ### mem.clear(fn)
 
 Clear all cached data of a memoized function.

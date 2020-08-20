@@ -44,6 +44,16 @@ const mem = (fn, {
 
 module.exports = mem;
 
+module.exports.mixin = options => (target, propertyKey, descriptor) => {
+	if (typeof target !== 'function') {
+		throw new TypeError('`target` must be function');
+	}
+
+	descriptor.value = mem(target[propertyKey], options);
+
+	return target;
+};
+
 module.exports.clear = fn => {
 	if (!cacheStore.has(fn)) {
 		throw new Error('Can\'t clear a function that was not memoized!');
