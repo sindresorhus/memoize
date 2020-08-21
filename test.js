@@ -160,7 +160,7 @@ test('promise support', async t => {
 });
 
 test('preserves the original function name', t => {
-	t.is(mem(function foo() { }).name, 'foo'); // eslint-disable-line func-names
+	t.is(mem(function foo() {}).name, 'foo'); // eslint-disable-line func-names
 });
 
 test('.mixin()', t => {
