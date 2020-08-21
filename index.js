@@ -46,7 +46,7 @@ module.exports = mem;
 
 module.exports.mixin = options => (target, propertyKey, descriptor) => {
 	if (typeof target !== 'function') {
-		throw new TypeError('`target` must be function');
+		throw new TypeError('`target` must be a function');
 	}
 
 	descriptor.value = mem(target[propertyKey], options);
