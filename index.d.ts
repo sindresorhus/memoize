@@ -107,7 +107,7 @@ declare const mem: {
 			this.i = 0;
 		}
 
-		@mem.mixin();
+		@mem.mixin()
 		counter() {
 			return ++this.i;
 		}

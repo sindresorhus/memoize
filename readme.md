@@ -214,7 +214,7 @@ class Example {
 		this.i = 0;
 	}
 
-	@mem.mixin();
+	@mem.mixin()
 	counter() {
 		return ++this.i;
 	}
