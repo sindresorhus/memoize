@@ -11,7 +11,7 @@ declare namespace mem {
 		ArgumentsType extends unknown[],
 		CacheKeyType,
 		ReturnType
-	> {
+		> {
 		/**
 		Milliseconds until the cache expires.
 
@@ -52,7 +52,7 @@ declare namespace mem {
 		@default new Map()
 		@example new WeakMap()
 		*/
-		readonly cache?: CacheStorage<CacheKeyType, {data: ReturnType; maxAge: number}>;
+		readonly cache?: CacheStorage<CacheKeyType, { data: ReturnType; maxAge: number }>;
 	}
 }
 
@@ -90,7 +90,7 @@ declare const mem: {
 		ReturnType,
 		CacheKeyType,
 		FunctionToMemoize = (...arguments: ArgumentsType) => ReturnType
-	>(
+		>(
 		fn: FunctionToMemoize,
 		options?: mem.Options<ArgumentsType, CacheKeyType, ReturnType>
 	): FunctionToMemoize;
@@ -107,24 +107,24 @@ declare const mem: {
 			this.i = 0;
 		}
 
-		@mem.mixin()
+		@mem.decorator()
 		counter() {
 			return ++this.i;
 		}
 	}
 	```
 	*/
-	mixin<ArgumentsType extends unknown[],
+	decorator<ArgumentsType extends unknown[],
 		ReturnType,
 		CacheKeyType,
 		FunctionToMemoize = (...arguments: ArgumentsType) => ReturnType
 	>(
 		options?: mem.Options<ArgumentsType, CacheKeyType, ReturnType>
 	): (
-		target: FunctionToMemoize,
-		propertyKey: string,
-		descriptor: PropertyDescriptor
-	) => FunctionToMemoize;
+			target: FunctionToMemoize,
+			propertyKey: string,
+			descriptor: PropertyDescriptor
+		) => FunctionToMemoize;
 
 	/**
 	Clear all cached data of a memoized function.

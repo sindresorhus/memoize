@@ -196,7 +196,7 @@ Use a different cache storage. Must implement the following methods: `.has(key)`
 
 Refer to the [caching strategies](#caching-strategy) section for more information.
 
-### mem.mixin(options)
+### mem.decorator(options)
 
 Returns a decorator which memoizes the function provided.
 
@@ -214,7 +214,7 @@ class Example {
 		this.i = 0;
 	}
 
-	@mem.mixin()
+	@mem.decorator()
 	counter() {
 		return ++this.i;
 	}

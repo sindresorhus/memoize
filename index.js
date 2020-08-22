@@ -44,7 +44,7 @@ const mem = (fn, {
 
 module.exports = mem;
 
-module.exports.mixin = options => (target, propertyKey, descriptor) => {
+module.exports.decorator = options => (target, propertyKey, descriptor) => {
 	if (typeof target !== 'function') {
 		throw new TypeError('`target` must be a function');
 	}
