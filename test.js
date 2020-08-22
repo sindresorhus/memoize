@@ -176,7 +176,12 @@ test('.decorator()', t => {
 
 	mem.decorator()(TestClass.prototype.counter, 'counter', TestClass.prototype);
 
-	t.is(new TestClass().counter(), 1);
+	const alpha = new TestClass();
+	t.is(alpha.counter(), 1);
+	t.is(alpha.counter(), 1, 'The method should be memoized');
+
+	const beta = new TestClass();
+	t.is(beta.counter(), 1, 'The method should not be memoized across instances');
 });
 
 test('.clear()', t => {
