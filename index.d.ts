@@ -52,7 +52,7 @@ declare namespace mem {
 		@default new Map()
 		@example new WeakMap()
 		*/
-		readonly cache?: CacheStorage<CacheKeyType, { data: ReturnType; maxAge: number }>;
+		readonly cache?: CacheStorage<CacheKeyType, {data: ReturnType; maxAge: number}>;
 	}
 }
 
