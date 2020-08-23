@@ -100,7 +100,7 @@ declare const mem: {
 
 	@example
 	```
-	const mem = require('mem');
+	import mem = require('mem');
 
 	class Example {
 		constructor() {
