@@ -114,17 +114,18 @@ declare const mem: {
 	}
 	```
 	*/
-	decorator<ArgumentsType extends unknown[],
+	decorator<
+		ArgumentsType extends unknown[],
 		ReturnType,
 		CacheKeyType,
 		FunctionToMemoize = (...arguments: ArgumentsType) => ReturnType
 	>(
 		options?: mem.Options<ArgumentsType, CacheKeyType, ReturnType>
 	): (
-			target: FunctionToMemoize,
-			propertyKey: string,
-			descriptor: PropertyDescriptor
-		) => FunctionToMemoize;
+		target: FunctionToMemoize,
+		propertyKey: string,
+		descriptor: PropertyDescriptor
+	) => FunctionToMemoize;
 
 	/**
 	Clear all cached data of a memoized function.
