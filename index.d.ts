@@ -11,7 +11,7 @@ declare namespace mem {
 		ArgumentsType extends unknown[],
 		CacheKeyType,
 		ReturnType
-		> {
+	> {
 		/**
 		Milliseconds until the cache expires.
 
@@ -90,7 +90,7 @@ declare const mem: {
 		ReturnType,
 		CacheKeyType,
 		FunctionToMemoize = (...arguments: ArgumentsType) => ReturnType
-		>(
+	>(
 		fn: FunctionToMemoize,
 		options?: mem.Options<ArgumentsType, CacheKeyType, ReturnType>
 	): FunctionToMemoize;
