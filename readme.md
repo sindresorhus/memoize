@@ -219,6 +219,17 @@ class Example {
 		return ++this.i;
 	}
 }
+
+class ExampleWithOptions {
+	constructor() {
+		this.i = 0;
+	}
+
+	@mem.decorator({maxAge: 1000})
+	counter() {
+		return ++this.i;
+	}
+}
 ```
 
 ### mem.clear(fn)
