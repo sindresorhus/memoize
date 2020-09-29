@@ -86,7 +86,7 @@ declare const mem: {
 	```
 	*/
 	<
-		ArgumentsType extends unknown[],
+		ArgumentsType extends any[],
 		ReturnType,
 		CacheKeyType,
 		FunctionToMemoize extends (...arguments: ArgumentsType) => ReturnType
