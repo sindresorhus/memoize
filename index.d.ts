@@ -8,7 +8,7 @@ declare namespace mem {
 	}
 
 	interface Options<
-		ArgumentsType extends unknown[],
+		ArgumentsType extends any[],
 		CacheKeyType,
 		ReturnType
 	> {
@@ -86,13 +86,13 @@ declare const mem: {
 	```
 	*/
 	<
-		ArgumentsType extends unknown[],
+		ArgumentsType extends any[],
 		ReturnType,
 		CacheKeyType,
-		FunctionToMemoize = (...arguments: ArgumentsType) => ReturnType
+		FunctionToMemoize extends (...arguments: ArgumentsType) => ReturnType
 	>(
 		fn: FunctionToMemoize,
-		options?: mem.Options<FunctionToMemoize extends (...arguments: infer P) => ReturnType ? P : never, CacheKeyType, ReturnType>
+		options?: mem.Options<Parameters<FunctionToMemoize>, CacheKeyType, ReturnType>
 	): FunctionToMemoize;
 
 	/**
@@ -100,7 +100,7 @@ declare const mem: {
 
 	@param fn - Memoized function.
 	*/
-	clear<ArgumentsType extends unknown[], ReturnType>(
+	clear<ArgumentsType extends any[], ReturnType>(
 		fn: (...arguments: ArgumentsType) => ReturnType
 	): void;
 };
