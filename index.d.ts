@@ -89,10 +89,10 @@ declare const mem: {
 		ArgumentsType extends unknown[],
 		ReturnType,
 		CacheKeyType,
-		FunctionToMemoize = (...arguments: ArgumentsType) => ReturnType
+		FunctionToMemoize extends (...arguments: ArgumentsType) => ReturnType
 	>(
 		fn: FunctionToMemoize,
-		options?: mem.Options<ArgumentsType, CacheKeyType, ReturnType>
+		options?: mem.Options<Parameters<typeof fn>, CacheKeyType, ReturnType>
 	): FunctionToMemoize;
 
 	/**
