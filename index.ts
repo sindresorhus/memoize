@@ -91,7 +91,7 @@ const mem = <
 	ArgumentsType extends CacheKeyType[],
 	ReturnType,
 	CacheKeyType,
-	FunctionToMemoize extends (...arguments_: ArgumentsType) => ReturnType
+	FunctionToMemoize = (...arguments_: ArgumentsType) => ReturnType
 >(
 	fn: FunctionToMemoize, {
 	cacheKey,
@@ -104,7 +104,8 @@ const mem = <
 		mapAgeCleaner(cache);
 	}
 
-	const memoized = function (this: any, ...arguments_: ArgumentsType): ReturnType {
+	// @ts-expect-error
+	const memoized: FunctionToMemoize = function (this: any, ...arguments_: ArgumentsType): ReturnType {
 		const key = cacheKey ? cacheKey(arguments_) : arguments_[0];
 
 		const cacheItem = cache.get(key);
@@ -112,6 +113,7 @@ const mem = <
 			return cacheItem.data;
 		}
 
+		// @ts-expect-error Looks like a TS bug
 		const result = fn.apply(this, arguments_);
 
 		cache.set(key, {
@@ -120,7 +122,7 @@ const mem = <
 		});
 
 		return result;
-	} as FunctionToMemoize;
+	};
 
 	try {
 		// The below call will throw in some host environments
