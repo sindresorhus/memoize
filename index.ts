@@ -2,7 +2,7 @@
 import mimicFn = require('mimic-fn');
 import mapAgeCleaner = require('map-age-cleaner');
 
-const cacheStore = new WeakMap();
+const cacheStore = new WeakMap<(...arguments_: any[]) => any>();
 interface CacheStorage<KeyType, ValueType> {
 	has(key: KeyType): boolean;
 	get(key: KeyType): ValueType | undefined;
@@ -88,10 +88,10 @@ memoized('bar');
 ```
 */
 const mem = <
-	ArgumentsType extends CacheKeyType[],
-	ReturnType,
+	ArgumentsType extends any[],
+	ReturnType extends any,
 	CacheKeyType,
-	FunctionToMemoize = (...arguments_: ArgumentsType) => ReturnType
+	FunctionToMemoize extends (...arguments_: ArgumentsType) => ReturnType
 >(
 	fn: FunctionToMemoize, {
 	cacheKey,
@@ -113,7 +113,6 @@ const mem = <
 			return cacheItem.data;
 		}
 
-		// @ts-expect-error Looks like a TS bug
 		const result = fn.apply(this, arguments_);
 
 		cache.set(key, {
@@ -142,7 +141,7 @@ Clear all cached data of a memoized function.
 
 @param fn - Memoized function.
 */
-mem.clear = (fn: Function): void => {
+mem.clear = (fn: (...arguments_: any[]) => any): void => {
 	if (!cacheStore.has(fn)) {
 		throw new Error('Can\'t clear a function that was not memoized!');
 	}
