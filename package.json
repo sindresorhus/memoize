@@ -41,12 +41,25 @@
 		"mimic-fn": "^3.0.0"
 	},
 	"devDependencies": {
+		"@ava/typescript": "^1.1.1",
 		"@sindresorhus/tsconfig": "^0.7.0",
-		"ava": "^2.4.0",
+		"@types/serialize-javascript": "^4.0.0",
+		"ava": "^3.13.0",
 		"del-cli": "^3.0.1",
 		"delay": "^4.1.0",
 		"serialize-javascript": "^2.1.0",
 		"typescript": "^4.0.3",
 		"xo": "^0.25.3"
+	},
+	"ava": {
+		"files": [
+			"test.ts"
+		],
+		"timeout": "1m",
+		"typescript": {
+			"rewritePaths": {
+				"./": "dist/"
+			}
+		}
 	}
 }

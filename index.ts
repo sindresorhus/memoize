@@ -12,7 +12,7 @@ interface CacheStorage<KeyType, ValueType> {
 }
 
 interface Options<
-	ArgumentsType extends unknown[],
+	ArgumentsType extends any[],
 	CacheKeyType,
 	ReturnType
 > {
@@ -97,15 +97,15 @@ const mem = <
 	cacheKey,
 	cache = new Map(),
 	maxAge
-}: Options<ArgumentsType, CacheKeyType, ReturnType> = {}): FunctionToMemoize => {
+}: Options<Parameters<FunctionToMemoize>, CacheKeyType, ReturnType> = {}): FunctionToMemoize => {
 	if (typeof maxAge === 'number') {
 		// TODO: drop after https://github.com/SamVerschueren/map-age-cleaner/issues/5
 		// @ts-expect-error
 		mapAgeCleaner(cache);
 	}
 
-	const memoized = function (this: any, ...arguments_: ArgumentsType): ReturnType {
-		const key = cacheKey ? cacheKey(arguments_) : arguments_[0];
+	const memoized: FunctionToMemoize = function (this: any, ...arguments_) {
+		const key = cacheKey ? cacheKey(arguments_ as Parameters<FunctionToMemoize>) : arguments_[0];
 
 		const cacheItem = cache.get(key);
 		if (cacheItem) {

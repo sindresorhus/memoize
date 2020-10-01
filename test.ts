@@ -1,7 +1,7 @@
 import test from 'ava';
 import delay from 'delay';
-import serializeJavascript from 'serialize-javascript';
-import mem from '.';
+const serializeJavascript = require('serialize-javascript');
+const mem = require('.');
 
 test('memoize', t => {
 	let i = 0;
@@ -35,6 +35,7 @@ test('memoize', t => {
 test('cacheKey option', t => {
 	let i = 0;
 	const fixture = () => i++;
+		// @ts-expect-error Due to https://github.com/sindresorhus/mem/issues/50
 	const memoized = mem(fixture, {cacheKey: ([firstArgument]) => String(firstArgument)});
 	t.is(memoized(1), 0);
 	t.is(memoized(1), 0);
@@ -93,12 +94,12 @@ test('maxAge option', async t => {
 test('maxAge option deletes old items', async t => {
 	let i = 0;
 	const fixture = () => i++;
-	const cache = new Map();
-	const deleted = [];
-	const remove = cache.delete.bind(cache);
+	const cache = new Map<number, number>();
+	const deleted: number[] = [];
+	const _delete = cache.delete.bind(cache);
 	cache.delete = item => {
 		deleted.push(item);
-		return remove(item);
+		return _delete(item);
 	};
 
 	const memoized = mem(fixture, {maxAge: 100, cache});
@@ -132,7 +133,7 @@ test('maxAge items are deleted even if function throws', async t => {
 	await delay(50);
 	t.is(memoized(1), 0);
 	await delay(200);
-	t.throws(() => memoized(1), 'failure');
+	t.throws(() => memoized(1), {message: 'failure'});
 	t.is(cache.size, 0);
 });
 
@@ -141,6 +142,7 @@ test('cache option', t => {
 	const fixture = () => i++;
 	const memoized = mem(fixture, {
 		cache: new WeakMap(),
+		// @ts-expect-error Due to https://github.com/sindresorhus/mem/issues/50
 		cacheKey: ([firstArgument]) => firstArgument
 	});
 	const foo = {};
@@ -175,15 +177,14 @@ test('.clear()', t => {
 });
 
 test('prototype support', t => {
-	const fixture = function () {
-		return this.i++;
+	class Unicorn {
+		i = 0;
+		foo() {
+			return this.i++;
+		}
 	};
 
-	const Unicorn = function () {
-		this.i = 0;
-	};
-
-	Unicorn.prototype.foo = mem(fixture);
+	Unicorn.prototype.foo = mem(Unicorn.prototype.foo);
 
 	const unicorn = new Unicorn();
 
@@ -195,5 +196,5 @@ test('prototype support', t => {
 test('mem.clear() throws when called with a plain function', t => {
 	t.throws(() => {
 		mem.clear(() => {});
-	}, 'Can\'t clear a function that was not memoized!');
+	}, {message: 'Can\'t clear a function that was not memoized!'});
 });
