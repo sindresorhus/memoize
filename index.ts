@@ -112,7 +112,7 @@ const mem = <
 			return cacheItem.data;
 		}
 
-		const result = fn.apply(memoized, arguments_);
+		const result = fn.apply(this, arguments_);
 
 		cache.set(key, {
 			data: result,
