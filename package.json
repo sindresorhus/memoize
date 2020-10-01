@@ -11,7 +11,7 @@
 		"url": "https://sindresorhus.com"
 	},
 	"engines": {
-		"node": ">=8"
+		"node": ">=10"
 	},
 	"scripts": {
 		"test": "xo && npm run build && ava",
@@ -47,9 +47,9 @@
 		"ava": "^3.13.0",
 		"del-cli": "^3.0.1",
 		"delay": "^4.1.0",
-		"serialize-javascript": "^2.1.0",
+		"serialize-javascript": "^5.0.1",
 		"typescript": "^4.0.3",
-		"xo": "^0.25.3"
+		"xo": "^0.33.1"
 	},
 	"ava": {
 		"files": [
@@ -60,6 +60,12 @@
 			"rewritePaths": {
 				"./": "dist/"
 			}
+		}
+	},
+	"xo": {
+		"rules": {
+			"@typescript-eslint/no-var-requires": "off",
+			"@typescript-eslint/no-empty-function": "off"
 		}
 	}
 }

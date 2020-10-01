@@ -35,7 +35,7 @@ test('memoize', t => {
 test('cacheKey option', t => {
 	let i = 0;
 	const fixture = () => i++;
-		// @ts-expect-error Due to https://github.com/sindresorhus/mem/issues/50
+	// @ts-expect-error Due to https://github.com/sindresorhus/mem/issues/50
 	const memoized = mem(fixture, {cacheKey: ([firstArgument]) => String(firstArgument)});
 	t.is(memoized(1), 0);
 	t.is(memoized(1), 0);
@@ -182,7 +182,7 @@ test('prototype support', t => {
 		foo() {
 			return this.i++;
 		}
-	};
+	}
 
 	Unicorn.prototype.foo = mem(Unicorn.prototype.foo);
 

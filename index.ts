@@ -4,10 +4,10 @@ import mapAgeCleaner = require('map-age-cleaner');
 
 const cacheStore = new WeakMap<(...arguments_: any[]) => any>();
 interface CacheStorage<KeyType, ValueType> {
-	has(key: KeyType): boolean;
-	get(key: KeyType): ValueType | undefined;
-	set(key: KeyType, value: ValueType): void;
-	delete(key: KeyType): void;
+	has: (key: KeyType) => boolean;
+	get: (key: KeyType) => ValueType | undefined;
+	set: (key: KeyType, value: ValueType) => void;
+	delete: (key: KeyType) => void;
 	clear?: () => void;
 }
 
@@ -94,18 +94,18 @@ const mem = <
 	FunctionToMemoize extends (...arguments_: ArgumentsType) => ReturnType
 >(
 	fn: FunctionToMemoize, {
-	cacheKey,
-	cache = new Map(),
-	maxAge
-}: Options<ArgumentsType, CacheKeyType, ReturnType> = {}): FunctionToMemoize => {
+		cacheKey,
+		cache = new Map(),
+		maxAge
+	}: Options<ArgumentsType, CacheKeyType, ReturnType> = {}): FunctionToMemoize => {
 	if (typeof maxAge === 'number') {
 		// TODO: drop after https://github.com/SamVerschueren/map-age-cleaner/issues/5
 		// @ts-expect-error
 		mapAgeCleaner(cache);
 	}
 
-	const memoized: FunctionToMemoize = function (this: any, ...arguments_) {
-		const key = cacheKey ? cacheKey(arguments_ as ArgumentsType) : arguments_[0];
+	const memoized = function (this: any, ...arguments_) {
+		const key = cacheKey ? cacheKey(arguments_) : arguments_[0];
 
 		const cacheItem = cache.get(key);
 		if (cacheItem) {
@@ -126,7 +126,7 @@ const mem = <
 		// The below call will throw in some host environments
 		// See https://github.com/sindresorhus/mimic-fn/issues/10
 		mimicFn(memoized, fn);
-	} catch (_) {}
+	} catch {}
 
 	cacheStore.set(memoized, cache);
 
