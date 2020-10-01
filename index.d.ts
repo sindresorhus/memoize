@@ -1,16 +1,22 @@
 declare namespace mem {
+	type AnyFunc = (...args: any) => any;
+	
+	interface CacheStorageContent<ValueType> {
+		data: ValueType
+		maxAge: number
+	}
+
 	interface CacheStorage<KeyType, ValueType> {
 		has(key: KeyType): boolean;
-		get(key: KeyType): ValueType | undefined;
-		set(key: KeyType, value: ValueType): void;
+		get(key: KeyType): CacheStorageContent<ValueType> | undefined;
+		set(key: KeyType, value: CacheStorageContent<ValueType>): void;
 		delete(key: KeyType): void;
 		clear?: () => void;
 	}
 
 	interface Options<
-		ArgumentsType extends unknown[],
-		CacheKeyType,
-		ReturnType
+		FunctionToMemoize extends AnyFunc,
+		CacheKeyType
 	> {
 		/**
 		Milliseconds until the cache expires.
@@ -44,7 +50,7 @@ declare namespace mem {
 		@default arguments_ => arguments_[0]
 		@example arguments_ => JSON.stringify(arguments_)
 		*/
-		readonly cacheKey?: (arguments: ArgumentsType) => CacheKeyType;
+		readonly cacheKey?: (args: Parameters<FunctionToMemoize>) => CacheKeyType;
 
 		/**
 		Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`, `.delete(key)`, and optionally `.clear()`. You could for example use a `WeakMap` instead or [`quick-lru`](https://github.com/sindresorhus/quick-lru) for a LRU cache.
@@ -52,7 +58,7 @@ declare namespace mem {
 		@default new Map()
 		@example new WeakMap()
 		*/
-		readonly cache?: CacheStorage<CacheKeyType, {data: ReturnType; maxAge: number}>;
+		readonly cache?: CacheStorage<CacheKeyType, ReturnType<FunctionToMemoize>>;
 	}
 }
 
@@ -86,13 +92,11 @@ declare const mem: {
 	```
 	*/
 	<
-		ArgumentsType extends unknown[],
-		ReturnType,
+		FunctionToMemoize extends mem.AnyFunc,
 		CacheKeyType,
-		FunctionToMemoize = (...arguments: ArgumentsType) => ReturnType
 	>(
 		fn: FunctionToMemoize,
-		options?: mem.Options<ArgumentsType, CacheKeyType, ReturnType>
+		options?: mem.Options<FunctionToMemoize, CacheKeyType>
 	): FunctionToMemoize;
 
 	/**
@@ -100,8 +104,8 @@ declare const mem: {
 
 	@param fn - Memoized function.
 	*/
-	clear<ArgumentsType extends unknown[], ReturnType>(
-		fn: (...arguments: ArgumentsType) => ReturnType
+	clear(
+		fn: Function
 	): void;
 };
 

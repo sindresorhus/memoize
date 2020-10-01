@@ -9,12 +9,46 @@ expectType<typeof fn>(mem(fn, {cacheKey: (...arguments_) => arguments_}));
 expectType<typeof fn>(
 	mem(
 		fn,
-		{cacheKey: (arguments_) => arguments_,
-		cache: new Map<[string], {data: boolean; maxAge: number}>()})
+		{
+			cacheKey: (arguments_) => "strValue",
+			cache: new Map<string, {data: boolean; maxAge: number}>()
+		}
+	)
 );
 expectType<typeof fn>(
-	mem(fn, {cache: new Map<[string], {data: boolean; maxAge: number}>()})
+	mem(fn, {cache: new Map<string, {data: boolean; maxAge: number}>()})
 );
+
+// Testing that the full cache object works with type inference
+const objFnReturnsNum = function({ key }: { key: string }) { return 10 }
+expectType<typeof objFnReturnsNum>(
+	mem(
+		objFnReturnsNum,
+		{
+			cacheKey : function(args: [{ key: string }]) {
+				return new Date();
+			},
+			cache : {
+				get: function(key: Date) {
+					return {
+						data: 5,
+						maxAge : 2
+					}
+				},
+				set : function(key: Date, value: { data : number, maxAge : number }) {
+
+				},
+				has : function(key: Date) {
+					return true;
+				},
+				delete : function(key: Date) {
+
+				},
+				clear : function() {}
+			}
+		}
+	)
+)
 
 /* Overloaded function tests */
 function overloadedFn(parameter: false): false;
