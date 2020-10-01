@@ -16,6 +16,13 @@ expectType<typeof fn>(
 	mem(fn, {cache: new Map<[string], {data: boolean; maxAge: number}>()})
 );
 
+
+mem(fn, {
+	cacheKey: (arguments_) => {
+		expectType<[string]>(arguments_)
+	}
+});
+
 /* Overloaded function tests */
 function overloadedFn(parameter: false): false;
 function overloadedFn(parameter: true): true;
