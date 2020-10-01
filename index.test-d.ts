@@ -10,7 +10,7 @@ expectType<typeof fn>(
 	mem(
 		fn,
 		{
-			cacheKey: (arguments_) => "strValue",
+			cacheKey: (arguments_) => arguments_[0],
 			cache: new Map<string, {data: boolean; maxAge: number}>()
 		}
 	)
