@@ -1,7 +1,6 @@
 import {expectType} from 'tsd';
 import mem = require('../dist');
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const fn = (_string: string) => true;
 
 expectType<typeof fn>(mem(fn));
@@ -21,7 +20,6 @@ expectType<typeof fn>(
 );
 
 // Testing that the full cache object works with type inference
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function objectFnReturnsNumber(_args: {key: string}) {
 	return 10;
 }
