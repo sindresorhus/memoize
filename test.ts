@@ -35,7 +35,6 @@ test('memoize', t => {
 test('cacheKey option', t => {
 	let i = 0;
 	const fixture = () => i++;
-	// @ts-expect-error Due to https://github.com/sindresorhus/mem/issues/50
 	const memoized = mem(fixture, {cacheKey: ([firstArgument]) => String(firstArgument)});
 	t.is(memoized(1), 0);
 	t.is(memoized(1), 0);
@@ -142,7 +141,6 @@ test('cache option', t => {
 	const fixture = () => i++;
 	const memoized = mem(fixture, {
 		cache: new WeakMap(),
-		// @ts-expect-error Due to https://github.com/sindresorhus/mem/issues/50
 		cacheKey: ([firstArgument]) => firstArgument
 	});
 	const foo = {};
