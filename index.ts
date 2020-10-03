@@ -2,9 +2,9 @@
 import mimicFn = require('mimic-fn');
 import mapAgeCleaner from 'map-age-cleaner';
 
-type AnyFunc = (...args: any) => any;
+type AnyFunction = (...args: any) => any;
 
-const cacheStore = new WeakMap<AnyFunc>();
+const cacheStore = new WeakMap<AnyFunction>();
 
 interface CacheStorageContent<ValueType> {
 	data: ValueType;
@@ -20,7 +20,7 @@ interface CacheStorage<KeyType, ValueType> {
 }
 
 interface Options<
-	FunctionToMemoize extends AnyFunc,
+	FunctionToMemoize extends AnyFunction,
 	CacheKeyType
 > {
 	/**
@@ -95,7 +95,7 @@ memoized('bar');
 ```
 */
 const mem = <
-	FunctionToMemoize extends AnyFunc,
+	FunctionToMemoize extends AnyFunction,
 	CacheKeyType
 >(
 	fn: FunctionToMemoize,
@@ -146,7 +146,7 @@ Clear all cached data of a memoized function.
 
 @param fn - Memoized function.
 */
-mem.clear = (fn: AnyFunc): void => {
+mem.clear = (fn: AnyFunction): void => {
 	if (!cacheStore.has(fn)) {
 		throw new Error('Can\'t clear a function that was not memoized!');
 	}
