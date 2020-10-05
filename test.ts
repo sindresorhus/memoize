@@ -35,7 +35,7 @@ test('memoize', t => {
 test('cacheKey option', t => {
 	let i = 0;
 	const fixture = () => i++;
-	const memoized = mem(fixture, {cacheKey: ([firstArgument]) => String(firstArgument)});
+	const memoized = mem(fixture, {cacheKey: ([firstArgument]: [any]) => String(firstArgument)});
 	t.is(memoized(1), 0);
 	t.is(memoized(1), 0);
 	t.is(memoized('1'), 0);
@@ -141,7 +141,7 @@ test('cache option', t => {
 	const fixture = () => i++;
 	const memoized = mem(fixture, {
 		cache: new WeakMap(),
-		cacheKey: ([firstArgument]) => firstArgument
+		cacheKey: ([firstArgument]: [any]) => firstArgument
 	});
 	const foo = {};
 	const bar = {};
