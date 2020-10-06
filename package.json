@@ -46,6 +46,8 @@
 		"xo": "^0.33.1"
 	},
 	"xo": {
-		"@typescript-eslint/member-ordering": "off"
+		"rules": {
+			"@typescript-eslint/member-ordering": "off"
+		}
 	}
 }
