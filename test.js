@@ -1,5 +1,5 @@
-import test from 'ava';
-import delay from 'delay';
+const test = require('ava');
+const delay = require('delay');
 const serializeJavascript = require('serialize-javascript');
 const mem = require('.');
 
@@ -132,7 +132,9 @@ test('maxAge items are deleted even if function throws', async t => {
 	await delay(50);
 	t.is(memoized(1), 0);
 	await delay(200);
-	t.throws(() => memoized(1), 'failure');
+	t.throws(() => memoized(1), {
+		message: 'failure'
+	});
 	t.is(cache.size, 0);
 });
 
@@ -195,5 +197,7 @@ test('prototype support', t => {
 test('mem.clear() throws when called with a plain function', t => {
 	t.throws(() => {
 		mem.clear(() => {});
-	}, 'Can\'t clear a function that was not memoized!');
+	}, {
+		message: 'Can\'t clear a function that was not memoized!'
+	});
 });
