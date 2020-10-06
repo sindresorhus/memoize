@@ -35,7 +35,7 @@ const mem = (fn, {
 		// The below call will throw in some host environments
 		// See https://github.com/sindresorhus/mimic-fn/issues/10
 		mimicFn(memoized, fn);
-	} catch (_) {}
+	} catch {}
 
 	cacheStore.set(memoized, cache);
 
