@@ -1,6 +1,6 @@
 'use strict';
 import mimicFn = require('mimic-fn');
-import mapAgeCleaner from 'map-age-cleaner';
+import mapAgeCleaner = require('map-age-cleaner');
 
 type AnyFunction = (...args: any) => any;
 
