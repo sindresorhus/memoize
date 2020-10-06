@@ -18,9 +18,11 @@
 		"build": "del-cli dist && tsc",
 		"prepack": "npm run build"
 	},
+	"main": "dist",
+	"types": "dist/index.d.ts",
 	"files": [
-		"index.js",
-		"index.d.ts"
+		"dist/index.js",
+		"dist/index.d.ts"
 	],
 	"keywords": [
 		"memoize",
