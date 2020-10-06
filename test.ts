@@ -53,7 +53,7 @@ test('memoize', t => {
 test('cacheKey option', t => {
 	let i = 0;
 	const fixture = () => i++;
-	const memoized = mem(fixture, {cacheKey: ([firstArgument]: [any]) => String(firstArgument)});
+	const memoized = mem(fixture, {cacheKey: ([firstArgument]) => String(firstArgument)});
 	// @ts-expect-error
 	t.is(memoized(1), 0);
 	// @ts-expect-error
@@ -190,7 +190,7 @@ test('cache option', t => {
 	const memoized = mem(fixture, {
 		// @ts-expect-error
 		cache: new WeakMap(),
-		cacheKey: ([firstArgument]: [any]) => firstArgument
+		cacheKey: ([firstArgument]) => firstArgument
 	});
 	const foo = {};
 	const bar = {};
