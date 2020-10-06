@@ -1,5 +1,5 @@
-import test from 'ava';
-import delay from 'delay';
+const test = require('ava');
+const delay = require('delay');
 const serializeJavascript = require('serialize-javascript');
 const mem = require('.');
 
@@ -35,7 +35,6 @@ test('memoize', t => {
 test('cacheKey option', t => {
 	let i = 0;
 	const fixture = () => i++;
-	// @ts-expect-error Due to https://github.com/sindresorhus/mem/issues/50
 	const memoized = mem(fixture, {cacheKey: ([firstArgument]) => String(firstArgument)});
 	t.is(memoized(1), 0);
 	t.is(memoized(1), 0);
@@ -94,12 +93,12 @@ test('maxAge option', async t => {
 test('maxAge option deletes old items', async t => {
 	let i = 0;
 	const fixture = () => i++;
-	const cache = new Map<number, number>();
-	const deleted: number[] = [];
-	const _delete = cache.delete.bind(cache);
+	const cache = new Map();
+	const deleted = [];
+	const remove = cache.delete.bind(cache);
 	cache.delete = item => {
 		deleted.push(item);
-		return _delete(item);
+		return remove(item);
 	};
 
 	const memoized = mem(fixture, {maxAge: 100, cache});
@@ -144,7 +143,6 @@ test('cache option', t => {
 	const fixture = () => i++;
 	const memoized = mem(fixture, {
 		cache: new WeakMap(),
-		// @ts-expect-error Due to https://github.com/sindresorhus/mem/issues/50
 		cacheKey: ([firstArgument]) => firstArgument
 	});
 	const foo = {};
@@ -179,14 +177,15 @@ test('.clear()', t => {
 });
 
 test('prototype support', t => {
-	class Unicorn {
-		i = 0;
-		foo() {
-			return this.i++;
-		}
-	}
+	const fixture = function () {
+		return this.i++;
+	};
 
-	Unicorn.prototype.foo = mem(Unicorn.prototype.foo);
+	const Unicorn = function () {
+		this.i = 0;
+	};
+
+	Unicorn.prototype.foo = mem(fixture);
 
 	const unicorn = new Unicorn();
 
