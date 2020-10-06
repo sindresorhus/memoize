@@ -133,7 +133,9 @@ test('maxAge items are deleted even if function throws', async t => {
 	await delay(50);
 	t.is(memoized(1), 0);
 	await delay(200);
-	t.throws(() => memoized(1), {message: 'failure'});
+	t.throws(() => memoized(1), {
+		message: 'failure'
+	});
 	t.is(cache.size, 0);
 });
 
@@ -196,5 +198,7 @@ test('prototype support', t => {
 test('mem.clear() throws when called with a plain function', t => {
 	t.throws(() => {
 		mem.clear(() => {});
-	}, {message: 'Can\'t clear a function that was not memoized!'});
+	}, {
+		message: 'Can\'t clear a function that was not memoized!'
+	});
 });
