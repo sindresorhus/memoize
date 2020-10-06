@@ -1,9 +1,9 @@
 declare namespace mem {
 	interface CacheStorage<KeyType, ValueType> {
-		has(key: KeyType): boolean;
-		get(key: KeyType): ValueType | undefined;
-		set(key: KeyType, value: ValueType): void;
-		delete(key: KeyType): void;
+		has: (key: KeyType) => boolean;
+		get: (key: KeyType) => ValueType | undefined;
+		set: (key: KeyType, value: ValueType) => void;
+		delete: (key: KeyType) => void;
 		clear?: () => void;
 	}
 
@@ -100,9 +100,9 @@ declare const mem: {
 
 	@param fn - Memoized function.
 	*/
-	clear<ArgumentsType extends unknown[], ReturnType>(
+	clear: <ArgumentsType extends unknown[], ReturnType>(
 		fn: (...arguments: ArgumentsType) => ReturnType
-	): void;
+	) => void;
 };
 
 export = mem;

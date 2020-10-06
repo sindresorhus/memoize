@@ -1,7 +1,7 @@
 import test from 'ava';
 import delay from 'delay';
-import serializeJavascript from 'serialize-javascript';
-import mem from '.';
+const serializeJavascript = require('serialize-javascript');
+const mem = require('.');
 
 test('memoize', t => {
 	let i = 0;
