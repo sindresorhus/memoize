@@ -1,18 +1,20 @@
 import {expectType} from 'tsd';
 import mem = require('..');
 
-const fn = (string: string) => Boolean(string);
+const fn = (text: string) => Boolean(text);
 
 expectType<typeof fn>(mem(fn));
 expectType<typeof fn>(mem(fn, {maxAge: 1}));
-expectType<typeof fn>(mem(fn, {cacheKey: (...arguments_) => arguments_}));
+expectType<typeof fn>(mem(fn, {cacheKey: ([firstArgument]) => firstArgument}));
 expectType<typeof fn>(
-	mem(
-		fn,
-		{cacheKey: ([text]: [string]) => text,
-			cache: new Map<string, {data: boolean; maxAge: number}>()})
+	mem(fn, {
+		// The cacheKey returns an array. This isn't deduplicated by a regular Map, but it's valid. The correct solution would be to use ManyKeysMap to deduplicate it correctly
+		cacheKey: (arguments_: [string]) => arguments_,
+		cache: new Map<[string], {data: boolean; maxAge: number}>()
+	})
 );
 expectType<typeof fn>(
+	// The `firstArgument` of `fn` is of type `string`, so it's used
 	mem(fn, {cache: new Map<string, {data: boolean; maxAge: number}>()})
 );
 
