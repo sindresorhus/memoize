@@ -141,12 +141,14 @@ Clear all cached data of a memoized function.
 @param fn - Memoized function.
 */
 mem.clear = (fn: (...arguments_: any[]) => any): void => {
-	if (!cacheStore.has(fn)) {
-		throw new Error('Can\'t clear a function that was not memoized!');
+	const cache = cacheStore.get(fn);
+	if (!cache) {
+		throw new TypeError('Can\'t clear a function that was not memoized!');
 	}
 
-	const cache = cacheStore.get(fn);
-	if (typeof cache.clear === 'function') {
-		cache.clear();
+	if (typeof cache.clear !== 'function') {
+		throw new TypeError('The cache Map can\'t be cleared!');
 	}
+
+	cache.clear();
 };
