@@ -1,7 +1,7 @@
-import test from 'ava';
-import delay from 'delay';
-import serializeJavascript from 'serialize-javascript';
-import mem from '.';
+const test = require('ava');
+const delay = require('delay');
+const serializeJavascript = require('serialize-javascript');
+const mem = require('.');
 
 test('memoize', t => {
 	let i = 0;
@@ -132,7 +132,9 @@ test('maxAge items are deleted even if function throws', async t => {
 	await delay(50);
 	t.is(memoized(1), 0);
 	await delay(200);
-	t.throws(() => memoized(1), 'failure');
+	t.throws(() => memoized(1), {
+		message: 'failure'
+	});
 	t.is(cache.size, 0);
 });
 
@@ -161,27 +163,6 @@ test('promise support', async t => {
 
 test('preserves the original function name', t => {
 	t.is(mem(function foo() {}).name, 'foo'); // eslint-disable-line func-names
-});
-
-test('.decorator()', t => {
-	class TestClass {
-		constructor() {
-			this.i = 0;
-		}
-
-		counter() {
-			return ++this.i;
-		}
-	}
-
-	mem.decorator()(TestClass.prototype.counter, 'counter', TestClass.prototype);
-
-	const alpha = new TestClass();
-	t.is(alpha.counter(), 1);
-	t.is(alpha.counter(), 1, 'The method should be memoized');
-
-	const beta = new TestClass();
-	t.is(beta.counter(), 1, 'The method should not be memoized across instances');
 });
 
 test('.clear()', t => {
@@ -216,5 +197,7 @@ test('prototype support', t => {
 test('mem.clear() throws when called with a plain function', t => {
 	t.throws(() => {
 		mem.clear(() => {});
-	}, 'Can\'t clear a function that was not memoized!');
+	}, {
+		message: 'Can\'t clear a function that was not memoized!'
+	});
 });
