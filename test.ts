@@ -248,5 +248,23 @@ test('prototype support', t => {
 test('mem.clear() throws when called with a plain function', t => {
 	t.throws(() => {
 		mem.clear(() => {});
-	}, {message: 'Can\'t clear a function that was not memoized!'});
+	}, {
+		message: 'Can\'t clear a function that was not memoized!',
+		instanceOf: TypeError
+	});
+});
+
+test('mem.clear() throws when called on an unclearable cache', t => {
+	const fixture = () => 1;
+	const memoized = mem(fixture, {
+		// @ts-expect-error
+		cache: new WeakMap()
+	});
+
+	t.throws(() => {
+		mem.clear(memoized);
+	}, {
+		message: 'The cache Map can\'t be cleared!',
+		instanceOf: TypeError
+	});
 });

@@ -30,3 +30,19 @@ expectType<true>(mem(overloadedFn)(true));
 expectType<false>(mem(overloadedFn)(false));
 
 mem.clear(fn);
+
+// CacheKey tests.
+// The argument should match the memoized function’s parameters
+mem((text: string) => Boolean(text), {
+	cacheKey: arguments_ => {
+		// @ts-expect-error #50
+		expectType<[string]>(arguments_);
+	}
+});
+
+mem(() => 1, {
+	cacheKey: arguments_ => {
+		// @ts-expect-error #50
+		expectType<[]>(arguments_);
+	}
+});
