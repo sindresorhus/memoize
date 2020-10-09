@@ -179,8 +179,8 @@ test('maxAge items are deleted even if function throws', async t => {
 	// @ts-expect-error
 	t.is(memoized(1), 0);
 	await delay(200);
-	// @ts-expect-error
 	t.throws(() => {
+		// @ts-expect-error
 		memoized(1);
 	}, {message: 'failure'});
 	t.is(cache.size, 0);
