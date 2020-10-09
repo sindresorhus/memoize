@@ -259,7 +259,6 @@ test('mem.clear() throws when called with a plain function', t => {
 test('mem.clear() throws when called on an unclearable cache', t => {
 	const fixture = () => 1;
 	const memoized = mem(fixture, {
-		// @ts-expect-error
 		cache: new WeakMap()
 	});
 
