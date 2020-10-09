@@ -190,7 +190,6 @@ test('cache option', t => {
 	let i = 0;
 	const fixture = () => i++;
 	const memoized = mem(fixture, {
-		// @ts-expect-error
 		cache: new WeakMap(),
 		cacheKey: ([firstArgument]) => firstArgument
 	});
