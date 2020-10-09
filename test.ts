@@ -52,17 +52,12 @@ test('memoize', t => {
 
 test('cacheKey option', t => {
 	let i = 0;
-	const fixture = () => i++;
+	const fixture = (..._arguments: any) => i++;
 	const memoized = mem(fixture, {cacheKey: ([firstArgument]) => String(firstArgument)});
-	// @ts-expect-error
 	t.is(memoized(1), 0);
-	// @ts-expect-error
 	t.is(memoized(1), 0);
-	// @ts-expect-error
 	t.is(memoized('1'), 0);
-	// @ts-expect-error
 	t.is(memoized('2'), 1);
-	// @ts-expect-error
 	t.is(memoized(2), 1);
 });
 
@@ -188,20 +183,16 @@ test('maxAge items are deleted even if function throws', async t => {
 
 test('cache option', t => {
 	let i = 0;
-	const fixture = () => i++;
+	const fixture = (..._arguments: any) => i++;
 	const memoized = mem(fixture, {
 		cache: new WeakMap(),
 		cacheKey: ([firstArgument]) => firstArgument
 	});
 	const foo = {};
 	const bar = {};
-	// @ts-expect-error
 	t.is(memoized(foo), 0);
-	// @ts-expect-error
 	t.is(memoized(foo), 0);
-	// @ts-expect-error
 	t.is(memoized(bar), 1);
-	// @ts-expect-error
 	t.is(memoized(bar), 1);
 });
 
