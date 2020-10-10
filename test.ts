@@ -1,7 +1,7 @@
-const test = require('ava');
-const delay = require('delay');
-const serializeJavascript = require('serialize-javascript');
-const mem = require('.');
+import test from 'ava';
+import delay from 'delay';
+import serializeJavascript = require('serialize-javascript');
+import mem = require('.');
 
 test('memoize', t => {
 	let i = 0;
@@ -10,31 +10,49 @@ test('memoize', t => {
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
+	// @ts-expect-error
 	t.is(memoized(undefined), 0);
+	// @ts-expect-error
 	t.is(memoized(undefined), 0);
+	// @ts-expect-error
 	t.is(memoized('foo'), 1);
+	// @ts-expect-error
 	t.is(memoized('foo'), 1);
+	// @ts-expect-error
 	t.is(memoized('foo'), 1);
+	// @ts-expect-error
 	t.is(memoized('foo', 'bar'), 1);
+	// @ts-expect-error
 	t.is(memoized('foo', 'bar'), 1);
+	// @ts-expect-error
 	t.is(memoized('foo', 'bar'), 1);
+	// @ts-expect-error
 	t.is(memoized(1), 2);
+	// @ts-expect-error
 	t.is(memoized(1), 2);
+	// @ts-expect-error
 	t.is(memoized(null), 3);
+	// @ts-expect-error
 	t.is(memoized(null), 3);
+	// @ts-expect-error
 	t.is(memoized(fixture), 4);
+	// @ts-expect-error
 	t.is(memoized(fixture), 4);
+	// @ts-expect-error
 	t.is(memoized(true), 5);
+	// @ts-expect-error
 	t.is(memoized(true), 5);
 
 	// Ensure that functions are stored by reference and not by "value" (e.g. their `.toString()` representation)
+	// @ts-expect-error
 	t.is(memoized(() => i++), 6);
+	// @ts-expect-error
 	t.is(memoized(() => i++), 7);
 });
 
 test('cacheKey option', t => {
 	let i = 0;
-	const fixture = () => i++;
+	const fixture = (..._arguments: any) => i++;
 	const memoized = mem(fixture, {cacheKey: ([firstArgument]) => String(firstArgument)});
 	t.is(memoized(1), 0);
 	t.is(memoized(1), 0);
@@ -48,9 +66,13 @@ test('memoize with multiple non-primitive arguments', t => {
 	const memoized = mem(() => i++, {cacheKey: JSON.stringify});
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
+	// @ts-expect-error
 	t.is(memoized({foo: true}, {bar: false}), 1);
+	// @ts-expect-error
 	t.is(memoized({foo: true}, {bar: false}), 1);
+	// @ts-expect-error
 	t.is(memoized({foo: true}, {bar: false}, {baz: true}), 2);
+	// @ts-expect-error
 	t.is(memoized({foo: true}, {bar: false}, {baz: true}), 2);
 });
 
@@ -59,9 +81,13 @@ test('memoize with regexp arguments', t => {
 	const memoized = mem(() => i++, {cacheKey: serializeJavascript});
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
+	// @ts-expect-error
 	t.is(memoized(/Sindre Sorhus/), 1);
+	// @ts-expect-error
 	t.is(memoized(/Sindre Sorhus/), 1);
+	// @ts-expect-error
 	t.is(memoized(/Elvin Peng/), 2);
+	// @ts-expect-error
 	t.is(memoized(/Elvin Peng/), 2);
 });
 
@@ -72,9 +98,13 @@ test('memoize with Symbol arguments', t => {
 	const memoized = mem(() => i++);
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
+	// @ts-expect-error
 	t.is(memoized(argument1), 1);
+	// @ts-expect-error
 	t.is(memoized(argument1), 1);
+	// @ts-expect-error
 	t.is(memoized(argument2), 2);
+	// @ts-expect-error
 	t.is(memoized(argument2), 2);
 });
 
@@ -82,33 +112,42 @@ test('maxAge option', async t => {
 	let i = 0;
 	const fixture = () => i++;
 	const memoized = mem(fixture, {maxAge: 100});
+	// @ts-expect-error
 	t.is(memoized(1), 0);
+	// @ts-expect-error
 	t.is(memoized(1), 0);
 	await delay(50);
+	// @ts-expect-error
 	t.is(memoized(1), 0);
 	await delay(200);
+	// @ts-expect-error
 	t.is(memoized(1), 1);
 });
 
 test('maxAge option deletes old items', async t => {
 	let i = 0;
 	const fixture = () => i++;
-	const cache = new Map();
-	const deleted = [];
-	const remove = cache.delete.bind(cache);
+	const cache = new Map<number, number>();
+	const deleted: number[] = [];
+	const _delete = cache.delete.bind(cache);
 	cache.delete = item => {
 		deleted.push(item);
-		return remove(item);
+		return _delete(item);
 	};
 
+	// @ts-expect-error
 	const memoized = mem(fixture, {maxAge: 100, cache});
+	// @ts-expect-error
 	t.is(memoized(1), 0);
+	// @ts-expect-error
 	t.is(memoized(1), 0);
 	t.is(cache.has(1), true);
 	await delay(50);
+	// @ts-expect-error
 	t.is(memoized(1), 0);
 	t.is(deleted.length, 0);
 	await delay(200);
+	// @ts-expect-error
 	t.is(memoized(1), 1);
 	t.is(deleted.length, 1);
 	t.is(deleted[0], 1);
@@ -126,21 +165,25 @@ test('maxAge items are deleted even if function throws', async t => {
 
 	const cache = new Map();
 	const memoized = mem(fixture, {maxAge: 100, cache});
+	// @ts-expect-error
 	t.is(memoized(1), 0);
+	// @ts-expect-error
 	t.is(memoized(1), 0);
 	t.is(cache.size, 1);
 	await delay(50);
+	// @ts-expect-error
 	t.is(memoized(1), 0);
 	await delay(200);
-	t.throws(() => memoized(1), {
-		message: 'failure'
-	});
+	t.throws(() => {
+		// @ts-expect-error
+		memoized(1);
+	}, {message: 'failure'});
 	t.is(cache.size, 0);
 });
 
 test('cache option', t => {
 	let i = 0;
-	const fixture = () => i++;
+	const fixture = (..._arguments: any) => i++;
 	const memoized = mem(fixture, {
 		cache: new WeakMap(),
 		cacheKey: ([firstArgument]) => firstArgument
@@ -158,6 +201,7 @@ test('promise support', async t => {
 	const memoized = mem(async () => i++);
 	t.is(await memoized(), 0);
 	t.is(await memoized(), 0);
+	// @ts-expect-error
 	t.is(await memoized(10), 1);
 });
 
@@ -177,15 +221,14 @@ test('.clear()', t => {
 });
 
 test('prototype support', t => {
-	const fixture = function () {
-		return this.i++;
-	};
+	class Unicorn {
+		i = 0;
+		foo() {
+			return this.i++;
+		}
+	}
 
-	const Unicorn = function () {
-		this.i = 0;
-	};
-
-	Unicorn.prototype.foo = mem(fixture);
+	Unicorn.prototype.foo = mem(Unicorn.prototype.foo);
 
 	const unicorn = new Unicorn();
 
@@ -198,6 +241,21 @@ test('mem.clear() throws when called with a plain function', t => {
 	t.throws(() => {
 		mem.clear(() => {});
 	}, {
-		message: 'Can\'t clear a function that was not memoized!'
+		message: 'Can\'t clear a function that was not memoized!',
+		instanceOf: TypeError
+	});
+});
+
+test('mem.clear() throws when called on an unclearable cache', t => {
+	const fixture = () => 1;
+	const memoized = mem(fixture, {
+		cache: new WeakMap()
+	});
+
+	t.throws(() => {
+		mem.clear(memoized);
+	}, {
+		message: 'The cache Map can\'t be cleared!',
+		instanceOf: TypeError
 	});
 });
