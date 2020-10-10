@@ -191,7 +191,7 @@ mem.decorator = <
 	descriptor.value = mem(target[propertyKey], options);
 
 	return target;
-}
+};
 
 /**
 Clear all cached data of a memoized function.
