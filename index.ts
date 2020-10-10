@@ -2,7 +2,7 @@
 import mimicFn = require('mimic-fn');
 import mapAgeCleaner = require('map-age-cleaner');
 
-type AnyFunction = (...args: any) => any;
+type AnyFunction = (...arguments_: any) => any;
 
 const cacheStore = new WeakMap<AnyFunction>();
 
@@ -55,7 +55,7 @@ interface Options<
 	@default arguments_ => arguments_[0]
 	@example arguments_ => JSON.stringify(arguments_)
 	*/
-	readonly cacheKey?: (args: Parameters<FunctionToMemoize>) => CacheKeyType;
+	readonly cacheKey?: (arguments_: Parameters<FunctionToMemoize>) => CacheKeyType;
 
 	/**
 	Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`, `.delete(key)`, and optionally `.clear()`. You could for example use a `WeakMap` instead or [`quick-lru`](https://github.com/sindresorhus/quick-lru) for a LRU cache.
@@ -106,7 +106,7 @@ const mem = <
 	}: Options<FunctionToMemoize, CacheKeyType> = {}
 ): FunctionToMemoize => {
 	if (typeof maxAge === 'number') {
-		// TODO: drop after https://github.com/SamVerschueren/map-age-cleaner/issues/5
+		// TODO: Drop after https://github.com/SamVerschueren/map-age-cleaner/issues/5
 		// @ts-expect-error
 		mapAgeCleaner(cache);
 	}

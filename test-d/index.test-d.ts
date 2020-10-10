@@ -31,7 +31,7 @@ expectType<false>(mem(overloadedFn)(false));
 
 mem.clear(fn);
 
-// CacheKey tests.
+// `cacheKey` tests.
 // The argument should match the memoized function’s parameters
 mem((text: string) => Boolean(text), {
 	cacheKey: arguments_ => {
@@ -45,8 +45,8 @@ mem(() => 1, {
 	}
 });
 
-// Ensures that the various cache functions infer their arguments type from the return type of cacheKey()
-mem((_args: {key: string}) => 1, {
+// Ensures that the various cache functions infer their arguments type from the return type of `cacheKey`
+mem((_arguments: {key: string}) => 1, {
 	cacheKey: (arguments_: [{key: string}]) => {
 		expectType<[{key: string}]>(arguments_);
 		return new Date();

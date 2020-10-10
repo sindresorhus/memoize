@@ -1,4 +1,4 @@
-# mem [![Build Status](https://travis-ci.org/sindresorhus/mem.svg?branch=master)](https://travis-ci.org/sindresorhus/mem)
+# mem [![Build Status](https://travis-ci.com/sindresorhus/mem.svg?branch=master)](https://travis-ci.com/github/sindresorhus/mem)
 
 > [Memoize](https://en.wikipedia.org/wiki/Memoization) functions - An optimization used to speed up consecutive function calls by caching the result of calls with identical input
 
