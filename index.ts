@@ -2,19 +2,26 @@
 import mimicFn = require('mimic-fn');
 import mapAgeCleaner = require('map-age-cleaner');
 
-const cacheStore = new WeakMap<(...arguments_: any[]) => any>();
+type AnyFunction = (...args: any) => any;
+
+const cacheStore = new WeakMap<AnyFunction>();
+
+interface CacheStorageContent<ValueType> {
+	data: ValueType;
+	maxAge: number;
+}
+
 interface CacheStorage<KeyType, ValueType> {
 	has: (key: KeyType) => boolean;
-	get: (key: KeyType) => ValueType | undefined;
-	set: (key: KeyType, value: ValueType) => void;
+	get: (key: KeyType) => CacheStorageContent<ValueType> | undefined;
+	set: (key: KeyType, value: CacheStorageContent<ValueType>) => void;
 	delete: (key: KeyType) => void;
 	clear?: () => void;
 }
 
 interface Options<
-	ArgumentsType extends unknown[],
-	CacheKeyType,
-	ReturnType
+	FunctionToMemoize extends AnyFunction,
+	CacheKeyType
 > {
 	/**
 	Milliseconds until the cache expires.
@@ -48,7 +55,7 @@ interface Options<
 	@default arguments_ => arguments_[0]
 	@example arguments_ => JSON.stringify(arguments_)
 	*/
-	readonly cacheKey?: (arguments_: ArgumentsType) => CacheKeyType;
+	readonly cacheKey?: (args: Parameters<FunctionToMemoize>) => CacheKeyType;
 
 	/**
 	Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`, `.delete(key)`, and optionally `.clear()`. You could for example use a `WeakMap` instead or [`quick-lru`](https://github.com/sindresorhus/quick-lru) for a LRU cache.
@@ -56,7 +63,7 @@ interface Options<
 	@default new Map()
 	@example new WeakMap()
 	*/
-	readonly cache?: CacheStorage<CacheKeyType, {data: ReturnType; maxAge: number}>;
+	readonly cache?: CacheStorage<CacheKeyType, ReturnType<FunctionToMemoize>>;
 }
 
 /**
@@ -88,16 +95,16 @@ memoized('bar');
 ```
 */
 const mem = <
-	ArgumentsType extends any[],
-	ReturnType extends any,
-	CacheKeyType,
-	FunctionToMemoize extends (...arguments_: ArgumentsType) => ReturnType
+	FunctionToMemoize extends AnyFunction,
+	CacheKeyType
 >(
-	fn: FunctionToMemoize, {
+	fn: FunctionToMemoize,
+	{
 		cacheKey,
 		cache = new Map(),
 		maxAge
-	}: Options<ArgumentsType, CacheKeyType, ReturnType> = {}): FunctionToMemoize => {
+	}: Options<FunctionToMemoize, CacheKeyType> = {}
+): FunctionToMemoize => {
 	if (typeof maxAge === 'number') {
 		// TODO: drop after https://github.com/SamVerschueren/map-age-cleaner/issues/5
 		// @ts-expect-error
@@ -140,7 +147,7 @@ Clear all cached data of a memoized function.
 
 @param fn - Memoized function.
 */
-mem.clear = (fn: (...arguments_: any[]) => any): void => {
+mem.clear = (fn: AnyFunction): void => {
 	const cache = cacheStore.get(fn);
 	if (!cache) {
 		throw new TypeError('Can\'t clear a function that was not memoized!');
