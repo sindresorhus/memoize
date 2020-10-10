@@ -129,11 +129,9 @@ const mem = <
 		return result;
 	} as FunctionToMemoize;
 
-	try {
-		// The below call will throw in some host environments
-		// See https://github.com/sindresorhus/mimic-fn/issues/10
-		mimicFn(memoized, fn);
-	} catch {}
+	mimicFn(memoized, fn, {
+		ignoreNonConfigurable: true
+	});
 
 	cacheStore.set(memoized, cache);
 
