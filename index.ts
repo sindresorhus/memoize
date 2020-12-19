@@ -173,12 +173,10 @@ class ExampleWithOptions {
 ```
 */
 mem.decorator = <
-	ArgumentsType extends unknown[],
-	ReturnType,
-	CacheKeyType,
-	FunctionToMemoize = (...arguments_: ArgumentsType) => ReturnType
+	FunctionToMemoize extends AnyFunction,
+	CacheKeyType
 >(
-	options?: Options<ArgumentsType, CacheKeyType, ReturnType>
+	options: Options<FunctionToMemoize, CacheKeyType> = {}
 ) => (
 	target: FunctionToMemoize,
 	propertyKey: string,
