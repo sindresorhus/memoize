@@ -237,7 +237,7 @@ test('prototype support', t => {
 	t.is(unicorn.foo(), 0);
 });
 
-test('.decorator()', (t: ExecutionContext) => {
+test('.decorator()', t => {
 	class TestClass {
 		constructor() {
 			this.i = 0;
