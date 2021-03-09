@@ -123,7 +123,7 @@ const mem = <
 
 		cache.set(key, {
 			data: result,
-			maxAge: maxAge ? Date.now() + maxAge : Infinity
+			maxAge: maxAge ? Date.now() + maxAge : Number.POSITIVE_INFINITY
 		});
 
 		return result;
@@ -176,17 +176,15 @@ mem.decorator = <
 >(
 	options: Options<FunctionToMemoize, CacheKeyType> = {}
 ) => (
-	target: FunctionToMemoize,
+	target: any,
 	propertyKey: string,
 	descriptor: PropertyDescriptor
-): FunctionToMemoize => {
-	if (typeof target !== 'function') {
+): void => {
+	if (typeof target[propertyKey] !== 'function') {
 		throw new TypeError('`target` must be a function');
 	}
 
 	descriptor.value = mem(target[propertyKey], options);
-
-	return target;
 };
 
 /**

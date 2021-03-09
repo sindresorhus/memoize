@@ -41,7 +41,7 @@ mem((text: string) => Boolean(text), {
 
 mem(() => 1, {
 	cacheKey: arguments_ => {
-		expectType<[]>(arguments_);
+		expectType<[]>(arguments_); // eslint-disable-line @typescript-eslint/ban-types
 	}
 });
 

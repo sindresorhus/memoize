@@ -239,9 +239,7 @@ test('prototype support', t => {
 
 test('.decorator()', t => {
 	class TestClass {
-		constructor() {
-			this.i = 0;
-		}
+		public i = 0;
 
 		@mem.decorator()
 		counter() {
