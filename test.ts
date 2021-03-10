@@ -222,9 +222,9 @@ test('.clear()', t => {
 
 test('prototype support', t => {
 	class Unicorn {
-		i = 0;
+		index = 0;
 		foo() {
-			return this.i++;
+			return this.index++;
 		}
 	}
 
@@ -239,11 +239,11 @@ test('prototype support', t => {
 
 test('.decorator()', t => {
 	class TestClass {
-		public i = 0;
+		index = 0;
 
 		@mem.decorator()
 		counter() {
-			return ++this.i;
+			return ++this.index;
 		}
 	}
 

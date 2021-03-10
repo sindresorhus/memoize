@@ -198,7 +198,7 @@ Refer to the [caching strategies](#caching-strategy) section for more informatio
 
 ### mem.decorator(options)
 
-Returns a decorator which memoizes the given function.
+Returns a TypeScript decorator which memoizes the given function.
 
 #### options
 
@@ -210,24 +210,20 @@ Same as options for `mem()`.
 const mem = require('mem');
 
 class Example {
-	constructor() {
-		this.i = 0;
-	}
+	index = 0
 
 	@mem.decorator()
 	counter() {
-		return ++this.i;
+		return ++this.index;
 	}
 }
 
 class ExampleWithOptions {
-	constructor() {
-		this.index = 0;
-	}
+	index = 0
 
 	@mem.decorator({maxAge: 1000})
 	counter() {
-		return ++this.i;
+		return ++this.index;
 	}
 }
 ```

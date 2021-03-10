@@ -141,31 +141,27 @@ const mem = <
 export = mem;
 
 /**
-Returns a decorator which memoizes the function provided.
+@returns A TypeScript decorator which memoizes the given function.
 
 @example
 ```
 import mem = require('mem');
 
 class Example {
-	constructor() {
-		this.i = 0;
-	}
+	index = 0
 
 	@mem.decorator()
 	counter() {
-		return ++this.i;
+		return ++this.index;
 	}
 }
 
 class ExampleWithOptions {
-	constructor() {
-		this.i = 0;
-	}
+	index = 0
 
 	@mem.decorator({maxAge: 1000})
 	counter() {
-		return ++this.i;
+		return ++this.index;
 	}
 }
 ```
@@ -180,11 +176,13 @@ mem.decorator = <
 	propertyKey: string,
 	descriptor: PropertyDescriptor
 ): void => {
-	if (typeof target[propertyKey] !== 'function') {
+	const input = target[propertyKey];
+
+	if (typeof input !== 'function') {
 		throw new TypeError('The decorated value must be a function');
 	}
 
-	descriptor.value = mem(target[propertyKey], options);
+	descriptor.value = mem(input, options);
 };
 
 /**
