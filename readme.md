@@ -222,7 +222,7 @@ class Example {
 
 class ExampleWithOptions {
 	constructor() {
-		this.i = 0;
+		this.index = 0;
 	}
 
 	@mem.decorator({maxAge: 1000})
