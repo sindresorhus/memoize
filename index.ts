@@ -181,7 +181,7 @@ mem.decorator = <
 	descriptor: PropertyDescriptor
 ): void => {
 	if (typeof target[propertyKey] !== 'function') {
-		throw new TypeError('Decorated value is not a function');
+		throw new TypeError('The decorated value must be a function');
 	}
 
 	descriptor.value = mem(target[propertyKey], options);
