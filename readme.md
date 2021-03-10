@@ -198,7 +198,7 @@ Refer to the [caching strategies](#caching-strategy) section for more informatio
 
 ### mem.decorator(options)
 
-Returns a decorator which memoizes the function provided.
+Returns a decorator which memoizes the given function.
 
 #### options
 
