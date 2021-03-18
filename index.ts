@@ -123,7 +123,7 @@ const mem = <
 
 		cache.set(key, {
 			data: result,
-			maxAge: maxAge ? Date.now() + maxAge : Infinity
+			maxAge: maxAge ? Date.now() + maxAge : Number.POSITIVE_INFINITY
 		});
 
 		return result;
@@ -139,6 +139,51 @@ const mem = <
 };
 
 export = mem;
+
+/**
+@returns A TypeScript decorator which memoizes the given function.
+
+@example
+```
+import mem = require('mem');
+
+class Example {
+	index = 0
+
+	@mem.decorator()
+	counter() {
+		return ++this.index;
+	}
+}
+
+class ExampleWithOptions {
+	index = 0
+
+	@mem.decorator({maxAge: 1000})
+	counter() {
+		return ++this.index;
+	}
+}
+```
+*/
+mem.decorator = <
+	FunctionToMemoize extends AnyFunction,
+	CacheKeyType
+>(
+	options: Options<FunctionToMemoize, CacheKeyType> = {}
+) => (
+	target: any,
+	propertyKey: string,
+	descriptor: PropertyDescriptor
+): void => {
+	const input = target[propertyKey];
+
+	if (typeof input !== 'function') {
+		throw new TypeError('The decorated value must be a function');
+	}
+
+	descriptor.value = mem(input, options);
+};
 
 /**
 Clear all cached data of a memoized function.

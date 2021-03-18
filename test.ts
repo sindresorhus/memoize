@@ -222,9 +222,9 @@ test('.clear()', t => {
 
 test('prototype support', t => {
 	class Unicorn {
-		i = 0;
+		index = 0;
 		foo() {
-			return this.i++;
+			return this.index++;
 		}
 	}
 
@@ -235,6 +235,24 @@ test('prototype support', t => {
 	t.is(unicorn.foo(), 0);
 	t.is(unicorn.foo(), 0);
 	t.is(unicorn.foo(), 0);
+});
+
+test('.decorator()', t => {
+	class TestClass {
+		index = 0;
+
+		@mem.decorator()
+		counter() {
+			return ++this.index;
+		}
+	}
+
+	const alpha = new TestClass();
+	t.is(alpha.counter(), 1);
+	t.is(alpha.counter(), 1, 'The method should be memoized');
+
+	const beta = new TestClass();
+	t.is(beta.counter(), 1, 'The method should not be memoized across instances');
 });
 
 test('mem.clear() throws when called with a plain function', t => {

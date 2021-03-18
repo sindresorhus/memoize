@@ -196,6 +196,38 @@ Use a different cache storage. Must implement the following methods: `.has(key)`
 
 Refer to the [caching strategies](#caching-strategy) section for more information.
 
+### mem.decorator(options)
+
+Returns a TypeScript decorator which memoizes the given function.
+
+#### options
+
+Type: `object`
+
+Same as options for `mem()`.
+
+```js
+const mem = require('mem');
+
+class Example {
+	index = 0
+
+	@mem.decorator()
+	counter() {
+		return ++this.index;
+	}
+}
+
+class ExampleWithOptions {
+	index = 0
+
+	@mem.decorator({maxAge: 1000})
+	counter() {
+		return ++this.index;
+	}
+}
+```
+
 ### mem.clear(fn)
 
 Clear all cached data of a memoized function.
