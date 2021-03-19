@@ -206,8 +206,8 @@ Type: `object`
 
 Same as options for `mem()`.
 
-```js
-const mem = require('mem');
+```ts
+import mem = require('mem');
 
 class Example {
 	index = 0
