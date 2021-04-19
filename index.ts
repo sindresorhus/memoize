@@ -4,6 +4,8 @@ import mapAgeCleaner = require('map-age-cleaner');
 
 type AnyFunction = (...arguments_: any) => any;
 
+const decoratorInstanceMap = new WeakMap();
+
 const cacheStore = new WeakMap<AnyFunction>();
 
 interface CacheStorageContent<ValueType> {
@@ -64,6 +66,15 @@ interface Options<
 	@example new WeakMap()
 	*/
 	readonly cache?: CacheStorage<CacheKeyType, ReturnType<FunctionToMemoize>>;
+}
+
+interface DecoratorOptions {
+	/**
+	Whether the same memoized function should be used in different instances or a different one should be initialised for each one.
+
+	@default false
+	*/
+	readonly isAcrossInstances?: boolean;
 }
 
 /**
@@ -170,7 +181,10 @@ mem.decorator = <
 	FunctionToMemoize extends AnyFunction,
 	CacheKeyType
 >(
-	options: Options<FunctionToMemoize, CacheKeyType> = {}
+	{
+		isAcrossInstances = false,
+		...options
+	}: Options<FunctionToMemoize, CacheKeyType> & DecoratorOptions = {}
 ) => (
 	target: any,
 	propertyKey: string,
@@ -182,7 +196,23 @@ mem.decorator = <
 		throw new TypeError('The decorated value must be a function');
 	}
 
-	descriptor.value = mem(input, options);
+	if (isAcrossInstances) {
+		descriptor.value = mem(input, options);
+		return;
+	}
+
+	delete descriptor.value;
+	delete descriptor.writable;
+
+	descriptor.get = function () {
+		if (!decoratorInstanceMap.has(this)) {
+			const value = mem(input, options);
+			decoratorInstanceMap.set(this, value);
+			return value;
+		}
+
+		return decoratorInstanceMap.get(this);
+	};
 };
 
 /**

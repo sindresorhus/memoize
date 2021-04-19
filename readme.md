@@ -204,7 +204,14 @@ Returns a TypeScript decorator which memoizes the given function.
 
 Type: `object`
 
-Same as options for `mem()`.
+Same as options for `mem()` and the following:
+
+##### isAcrossInstances
+
+Type: `boolean`\
+Default: `false`
+
+Whether the same memoized function should be used in different instances or a different one should be initialised for each one.
 
 ```ts
 import mem = require('mem');
