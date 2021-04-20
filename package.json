@@ -1,6 +1,6 @@
 {
 	"name": "mem",
-	"version": "8.1.0",
+	"version": "8.1.1",
 	"description": "Memoize functions - An optimization used to speed up consecutive function calls by caching the result of calls with identical input",
 	"license": "MIT",
 	"repository": "sindresorhus/mem",
