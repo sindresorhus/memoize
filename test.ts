@@ -255,24 +255,6 @@ test('.decorator()', t => {
 
 	const beta = new TestClass();
 	t.is(beta.counter(), 2, 'The method should not be memoized across instances');
-
-	returnValue++;
-
-	class TestClass2 {
-		@mem.decorator({isAcrossInstances: true})
-		counter() {
-			return returnValue;
-		}
-	}
-
-	const charlie = new TestClass2();
-	t.is(charlie.counter(), 3);
-	t.is(charlie.counter(), 3, 'The method should be memoized');
-
-	returnValue++;
-
-	const delta = new TestClass2();
-	t.is(delta.counter(), 3, 'The method should be memoized across instances');
 });
 
 test('mem.clear() throws when called with a plain function', t => {

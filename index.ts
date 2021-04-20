@@ -68,15 +68,6 @@ interface Options<
 	readonly cache?: CacheStorage<CacheKeyType, ReturnType<FunctionToMemoize>>;
 }
 
-interface DecoratorOptions {
-	/**
-	Whether the same memoized function should be used in different instances or a different one should be initialised for each one.
-
-	@default false
-	*/
-	readonly isAcrossInstances?: boolean;
-}
-
 /**
 [Memoize](https://en.wikipedia.org/wiki/Memoization) functions - An optimization used to speed up consecutive function calls by caching the result of calls with identical input.
 
@@ -152,7 +143,7 @@ const mem = <
 export = mem;
 
 /**
-@returns A TypeScript decorator which memoizes the given function.
+@returns A [decorator](https://github.com/tc39/proposal-decorators) to memoize class methods or static class functions.
 
 @example
 ```
@@ -181,10 +172,7 @@ mem.decorator = <
 	FunctionToMemoize extends AnyFunction,
 	CacheKeyType
 >(
-	{
-		isAcrossInstances = false,
-		...options
-	}: Options<FunctionToMemoize, CacheKeyType> & DecoratorOptions = {}
+	options: Options<FunctionToMemoize, CacheKeyType> = {}
 ) => (
 	target: any,
 	propertyKey: string,
@@ -194,11 +182,6 @@ mem.decorator = <
 
 	if (typeof input !== 'function') {
 		throw new TypeError('The decorated value must be a function');
-	}
-
-	if (isAcrossInstances) {
-		descriptor.value = mem(input, options);
-		return;
 	}
 
 	delete descriptor.value;
