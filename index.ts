@@ -143,7 +143,7 @@ const mem = <
 export = mem;
 
 /**
-@returns A [decorator](https://github.com/tc39/proposal-decorators) to memoize class methods or static class functions.
+@returns A [decorator](https://github.com/tc39/proposal-decorators) to memoize class methods or static class methods.
 
 @example
 ```
