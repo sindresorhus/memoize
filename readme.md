@@ -198,7 +198,7 @@ Refer to the [caching strategies](#caching-strategy) section for more informatio
 
 ### mem.decorator(options)
 
-Returns a [decorator](https://github.com/tc39/proposal-decorators) to memoize class methods.
+Returns a [decorator](https://github.com/tc39/proposal-decorators) to memoize class methods or static class methods.
 
 Notes:
 

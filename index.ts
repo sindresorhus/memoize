@@ -4,6 +4,8 @@ import mapAgeCleaner = require('map-age-cleaner');
 
 type AnyFunction = (...arguments_: any) => any;
 
+const decoratorInstanceMap = new WeakMap();
+
 const cacheStore = new WeakMap<AnyFunction>();
 
 interface CacheStorageContent<ValueType> {
@@ -141,7 +143,7 @@ const mem = <
 export = mem;
 
 /**
-@returns A TypeScript decorator which memoizes the given function.
+@returns A [decorator](https://github.com/tc39/proposal-decorators) to memoize class methods or static class methods.
 
 @example
 ```
@@ -182,7 +184,18 @@ mem.decorator = <
 		throw new TypeError('The decorated value must be a function');
 	}
 
-	descriptor.value = mem(input, options);
+	delete descriptor.value;
+	delete descriptor.writable;
+
+	descriptor.get = function () {
+		if (!decoratorInstanceMap.has(this)) {
+			const value = mem(input, options);
+			decoratorInstanceMap.set(this, value);
+			return value;
+		}
+
+		return decoratorInstanceMap.get(this);
+	};
 };
 
 /**
