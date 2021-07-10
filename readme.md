@@ -15,7 +15,7 @@ $ npm install mem
 ## Usage
 
 ```js
-const mem = require('mem');
+import mem from 'mem';
 
 let i = 0;
 const counter = () => ++i;
@@ -43,40 +43,36 @@ memoized('bar', 'foo');
 ##### Works fine with promise returning functions
 
 ```js
-const mem = require('mem');
+import mem from 'mem';
 
 let i = 0;
 const counter = async () => ++i;
 const memoized = mem(counter);
 
-(async () => {
-	console.log(await memoized());
-	//=> 1
+console.log(await memoized());
+//=> 1
 
-	// The return value didn't increase as it's cached
-	console.log(await memoized());
-	//=> 1
-})();
+// The return value didn't increase as it's cached
+console.log(await memoized());
+//=> 1
 ```
 
 ```js
-const mem = require('mem');
-const got = require('got');
-const delay = require('delay');
+import mem from 'mem';
+import got from 'got';
+import delay from 'delay';
 
 const memGot = mem(got, {maxAge: 1000});
 
-(async () => {
-	await memGot('https://sindresorhus.com');
+await memGot('https://sindresorhus.com');
 
-	// This call is cached
-	await memGot('https://sindresorhus.com');
+// This call is cached
+await memGot('https://sindresorhus.com');
 
-	await delay(2000);
+await delay(2000);
 
-	// This call is not cached as the cache has expired
-	await memGot('https://sindresorhus.com');
-})();
+// This call is not cached as the cache has expired
+await memGot('https://sindresorhus.com');
 ```
 
 ### Caching strategy
@@ -138,7 +134,7 @@ heavyMemoizedOperation('hello', {full: true}); // Retrieved from cache
 If your function accepts multiple arguments that aren't supported by `JSON.stringify` (e.g. DOM elements and functions), you can instead extend the initial exact equality (`===`) to work on multiple arguments using [`many-keys-map`](https://github.com/fregante/many-keys-map):
 
 ```js
-const ManyKeysMap = require('many-keys-map');
+import ManyKeysMap from 'many-keys-map';
 
 const addListener = (emitter, eventName, listener) => emitter.on(eventName, listener);
 
@@ -196,7 +192,7 @@ Use a different cache storage. Must implement the following methods: `.has(key)`
 
 Refer to the [caching strategies](#caching-strategy) section for more information.
 
-### mem.decorator(options)
+### memDecorator(options)
 
 Returns a [decorator](https://github.com/tc39/proposal-decorators) to memoize class methods or static class methods.
 
@@ -213,12 +209,12 @@ Type: `object`
 Same as options for `mem()`.
 
 ```ts
-import mem = require('mem');
+import {memDecorator} from 'mem';
 
 class Example {
 	index = 0
 
-	@mem.decorator()
+	@memDecorator()
 	counter() {
 		return ++this.index;
 	}
@@ -227,14 +223,14 @@ class Example {
 class ExampleWithOptions {
 	index = 0
 
-	@mem.decorator({maxAge: 1000})
+	@memDecorator({maxAge: 1000})
 	counter() {
 		return ++this.index;
 	}
 }
 ```
 
-### mem.clear(fn)
+### memClear(fn)
 
 Clear all cached data of a memoized function.
 
@@ -253,21 +249,19 @@ If you want to know how many times your cache had a hit or a miss, you can make 
 #### Example
 
 ```js
-const mem = require('mem');
-const StatsMap = require('stats-map');
-const got = require('got');
+import mem from 'mem';
+import StatsMap from 'stats-map';
+import got from 'got';
 
 const cache = new StatsMap();
 const memGot = mem(got, {cache});
 
-(async () => {
-	await memGot('https://sindresorhus.com');
-	await memGot('https://sindresorhus.com');
-	await memGot('https://sindresorhus.com');
+await memGot('https://sindresorhus.com');
+await memGot('https://sindresorhus.com');
+await memGot('https://sindresorhus.com');
 
-	console.log(cache.stats);
-	//=> {hits: 2, misses: 1}
-})();
+console.log(cache.stats);
+//=> {hits: 2, misses: 1}
 ```
 
 ## Related

@@ -1,6 +1,5 @@
-'use strict';
-import mimicFn = require('mimic-fn');
-import mapAgeCleaner = require('map-age-cleaner');
+import mimicFn from 'mimic-fn';
+import mapAgeCleaner from 'map-age-cleaner';
 
 type AnyFunction = (...arguments_: any) => any;
 
@@ -24,7 +23,7 @@ interface CacheStorage<KeyType, ValueType> {
 interface Options<
 	FunctionToMemoize extends AnyFunction,
 	CacheKeyType
-> {
+	> {
 	/**
 	Milliseconds until the cache expires.
 
@@ -40,7 +39,7 @@ interface Options<
 	You can have it cache **all** the arguments by value with `JSON.stringify`, if they are compatible:
 
 	```
-	import mem = require('mem');
+	import mem from 'mem';
 
 	mem(function_, {cacheKey: JSON.stringify});
 	```
@@ -48,8 +47,8 @@ interface Options<
 	Or you can use a more full-featured serializer like [serialize-javascript](https://github.com/yahoo/serialize-javascript) to add support for `RegExp`, `Date` and so on.
 
 	```
-	import mem = require('mem');
-	import serializeJavascript = require('serialize-javascript');
+	import mem from 'mem';
+	import serializeJavascript from 'serialize-javascript';
 
 	mem(function_, {cacheKey: serializeJavascript});
 	```
@@ -75,7 +74,7 @@ interface Options<
 
 @example
 ```
-import mem = require('mem');
+import mem from 'mem';
 
 let i = 0;
 const counter = () => ++i;
@@ -96,7 +95,7 @@ memoized('bar');
 //=> 2
 ```
 */
-const mem = <
+export default function mem<
 	FunctionToMemoize extends AnyFunction,
 	CacheKeyType
 >(
@@ -106,7 +105,7 @@ const mem = <
 		cache = new Map(),
 		maxAge
 	}: Options<FunctionToMemoize, CacheKeyType> = {}
-): FunctionToMemoize => {
+): FunctionToMemoize {
 	if (typeof maxAge === 'number') {
 		// TODO: Drop after https://github.com/SamVerschueren/map-age-cleaner/issues/5
 		// @ts-expect-error
@@ -140,19 +139,17 @@ const mem = <
 	return memoized;
 };
 
-export = mem;
-
 /**
 @returns A [decorator](https://github.com/tc39/proposal-decorators) to memoize class methods or static class methods.
 
 @example
 ```
-import mem = require('mem');
+import {memDecorator} from 'mem';
 
 class Example {
 	index = 0
 
-	@mem.decorator()
+	@memDecorator()
 	counter() {
 		return ++this.index;
 	}
@@ -161,49 +158,51 @@ class Example {
 class ExampleWithOptions {
 	index = 0
 
-	@mem.decorator({maxAge: 1000})
+	@memDecorator({maxAge: 1000})
 	counter() {
 		return ++this.index;
 	}
 }
 ```
 */
-mem.decorator = <
+export function memDecorator<
 	FunctionToMemoize extends AnyFunction,
 	CacheKeyType
 >(
 	options: Options<FunctionToMemoize, CacheKeyType> = {}
-) => (
-	target: any,
-	propertyKey: string,
-	descriptor: PropertyDescriptor
-): void => {
-	const input = target[propertyKey];
+) {
+	return (
+		target: any,
+		propertyKey: string,
+		descriptor: PropertyDescriptor
+	): void => {
+		const input = target[propertyKey];
 
-	if (typeof input !== 'function') {
-		throw new TypeError('The decorated value must be a function');
-	}
-
-	delete descriptor.value;
-	delete descriptor.writable;
-
-	descriptor.get = function () {
-		if (!decoratorInstanceMap.has(this)) {
-			const value = mem(input, options);
-			decoratorInstanceMap.set(this, value);
-			return value;
+		if (typeof input !== 'function') {
+			throw new TypeError('The decorated value must be a function');
 		}
 
-		return decoratorInstanceMap.get(this);
+		delete descriptor.value;
+		delete descriptor.writable;
+
+		descriptor.get = function () {
+			if (!decoratorInstanceMap.has(this)) {
+				const value = mem(input, options);
+				decoratorInstanceMap.set(this, value);
+				return value;
+			}
+
+			return decoratorInstanceMap.get(this);
+		};
 	};
-};
+}
 
 /**
 Clear all cached data of a memoized function.
 
 @param fn - Memoized function.
 */
-mem.clear = (fn: AnyFunction): void => {
+export function memClear(fn: AnyFunction): void {
 	const cache = cacheStore.get(fn);
 	if (!cache) {
 		throw new TypeError('Can\'t clear a function that was not memoized!');

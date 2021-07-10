@@ -1,5 +1,5 @@
 import {expectType} from 'tsd';
-import mem = require('..');
+import mem, {memClear} from '..';
 
 const fn = (text: string) => Boolean(text);
 
@@ -29,7 +29,7 @@ expectType<typeof overloadedFn>(mem(overloadedFn));
 expectType<true>(mem(overloadedFn)(true));
 expectType<false>(mem(overloadedFn)(false));
 
-mem.clear(fn);
+memClear(fn);
 
 // `cacheKey` tests.
 // The argument should match the memoized function’s parameters
