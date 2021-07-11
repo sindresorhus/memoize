@@ -1,7 +1,7 @@
 import test from 'ava';
 import delay from 'delay';
 import serializeJavascript from 'serialize-javascript';
-import mem, {memDecorator, memClear} from '.';
+import mem, {memDecorator, memClear} from './index.js';
 
 test('memoize', t => {
 	let i = 0;
@@ -186,7 +186,7 @@ test('cache option', t => {
 	const fixture = (..._arguments: any) => i++;
 	const memoized = mem(fixture, {
 		cache: new WeakMap(),
-		cacheKey: ([firstArgument]) => firstArgument
+		cacheKey: <ReturnValue>([firstArgument]: [ReturnValue]): ReturnValue => firstArgument,
 	});
 	const foo = {};
 	const bar = {};
@@ -262,20 +262,20 @@ test('memClear() throws when called with a plain function', t => {
 		memClear(() => {});
 	}, {
 		message: 'Can\'t clear a function that was not memoized!',
-		instanceOf: TypeError
+		instanceOf: TypeError,
 	});
 });
 
 test('memClear() throws when called on an unclearable cache', t => {
 	const fixture = () => 1;
 	const memoized = mem(fixture, {
-		cache: new WeakMap()
+		cache: new WeakMap(),
 	});
 
 	t.throws(() => {
 		memClear(memoized);
 	}, {
 		message: 'The cache Map can\'t be cleared!',
-		instanceOf: TypeError
+		instanceOf: TypeError,
 	});
 });

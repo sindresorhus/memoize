@@ -22,8 +22,8 @@ interface CacheStorage<KeyType, ValueType> {
 
 interface Options<
 	FunctionToMemoize extends AnyFunction,
-	CacheKeyType
-	> {
+	CacheKeyType,
+> {
 	/**
 	Milliseconds until the cache expires.
 
@@ -97,14 +97,14 @@ memoized('bar');
 */
 export default function mem<
 	FunctionToMemoize extends AnyFunction,
-	CacheKeyType
+	CacheKeyType,
 >(
 	fn: FunctionToMemoize,
 	{
 		cacheKey,
 		cache = new Map(),
-		maxAge
-	}: Options<FunctionToMemoize, CacheKeyType> = {}
+		maxAge,
+	}: Options<FunctionToMemoize, CacheKeyType> = {},
 ): FunctionToMemoize {
 	if (typeof maxAge === 'number') {
 		// TODO: Drop after https://github.com/SamVerschueren/map-age-cleaner/issues/5
@@ -113,6 +113,7 @@ export default function mem<
 	}
 
 	const memoized = function (this: any, ...arguments_) {
+		/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
 		const key = cacheKey ? cacheKey(arguments_) : arguments_[0];
 
 		const cacheItem = cache.get(key);
@@ -124,20 +125,21 @@ export default function mem<
 
 		cache.set(key, {
 			data: result,
-			maxAge: maxAge ? Date.now() + maxAge : Number.POSITIVE_INFINITY
+			maxAge: maxAge ? Date.now() + maxAge : Number.POSITIVE_INFINITY,
 		});
 
 		return result;
+		/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
 	} as FunctionToMemoize;
 
 	mimicFn(memoized, fn, {
-		ignoreNonConfigurable: true
+		ignoreNonConfigurable: true,
 	});
 
 	cacheStore.set(memoized, cache);
 
 	return memoized;
-};
+}
 
 /**
 @returns A [decorator](https://github.com/tc39/proposal-decorators) to memoize class methods or static class methods.
@@ -167,14 +169,15 @@ class ExampleWithOptions {
 */
 export function memDecorator<
 	FunctionToMemoize extends AnyFunction,
-	CacheKeyType
+	CacheKeyType,
 >(
-	options: Options<FunctionToMemoize, CacheKeyType> = {}
+	options: Options<FunctionToMemoize, CacheKeyType> = {},
 ) {
+	/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access */
 	return (
 		target: any,
 		propertyKey: string,
-		descriptor: PropertyDescriptor
+		descriptor: PropertyDescriptor,
 	): void => {
 		const input = target[propertyKey];
 
@@ -195,6 +198,7 @@ export function memDecorator<
 			return decoratorInstanceMap.get(this);
 		};
 	};
+	/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access */
 }
 
 /**
@@ -203,6 +207,7 @@ Clear all cached data of a memoized function.
 @param fn - Memoized function.
 */
 export function memClear(fn: AnyFunction): void {
+	/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
 	const cache = cacheStore.get(fn);
 	if (!cache) {
 		throw new TypeError('Can\'t clear a function that was not memoized!');
@@ -213,4 +218,5 @@ export function memClear(fn: AnyFunction): void {
 	}
 
 	cache.clear();
-};
+	/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
+}
