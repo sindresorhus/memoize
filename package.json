@@ -16,14 +16,13 @@
 		"node": ">=12.20"
 	},
 	"scripts": {
-		"test": "xo && ava && tsd",
+		"test": "xo && ava && npm run build && tsd",
 		"build": "del-cli dist && tsc",
 		"prepack": "npm run build"
 	},
 	"types": "dist/index.d.ts",
 	"files": [
-		"dist/index.js",
-		"dist/index.d.ts"
+		"dist"
 	],
 	"keywords": [
 		"memoize",
