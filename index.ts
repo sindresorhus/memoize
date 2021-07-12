@@ -5,7 +5,7 @@ type AnyFunction = (...arguments_: any) => any;
 
 const decoratorInstanceMap = new WeakMap();
 
-const cacheStore = new WeakMap<AnyFunction>();
+const cacheStore = new WeakMap<AnyFunction, CacheStorage<any, any>>();
 
 interface CacheStorageContent<ValueType> {
 	data: ValueType;
@@ -107,29 +107,25 @@ export default function mem<
 	}: Options<FunctionToMemoize, CacheKeyType> = {},
 ): FunctionToMemoize {
 	if (typeof maxAge === 'number') {
-		// TODO: Drop after https://github.com/SamVerschueren/map-age-cleaner/issues/5
-		// @ts-expect-error
-		mapAgeCleaner(cache);
+		mapAgeCleaner(cache as unknown as Map<CacheKeyType, ReturnType<FunctionToMemoize>>);
 	}
 
-	const memoized = function (this: any, ...arguments_) {
-		/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
-		const key = cacheKey ? cacheKey(arguments_) : arguments_[0];
+	const memoized = function (this: any, ...arguments_: Parameters<FunctionToMemoize>): ReturnType<FunctionToMemoize> {
+		const key = cacheKey ? cacheKey(arguments_) : arguments_[0] as CacheKeyType;
 
 		const cacheItem = cache.get(key);
 		if (cacheItem) {
-			return cacheItem.data;
+			return cacheItem.data; // eslint-disable-line @typescript-eslint/no-unsafe-return
 		}
 
-		const result = fn.apply(this, arguments_);
+		const result = fn.apply(this, arguments_) as ReturnType<FunctionToMemoize>;
 
 		cache.set(key, {
 			data: result,
 			maxAge: maxAge ? Date.now() + maxAge : Number.POSITIVE_INFINITY,
 		});
 
-		return result;
-		/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
+		return result; // eslint-disable-line @typescript-eslint/no-unsafe-return
 	} as FunctionToMemoize;
 
 	mimicFn(memoized, fn, {
@@ -173,13 +169,12 @@ export function memDecorator<
 >(
 	options: Options<FunctionToMemoize, CacheKeyType> = {},
 ) {
-	/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access */
 	return (
 		target: any,
 		propertyKey: string,
 		descriptor: PropertyDescriptor,
 	): void => {
-		const input = target[propertyKey];
+		const input = target[propertyKey]; // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
 
 		if (typeof input !== 'function') {
 			throw new TypeError('The decorated value must be a function');
@@ -190,15 +185,14 @@ export function memDecorator<
 
 		descriptor.get = function () {
 			if (!decoratorInstanceMap.has(this)) {
-				const value = mem(input, options);
+				const value = mem(input, options) as FunctionToMemoize;
 				decoratorInstanceMap.set(this, value);
 				return value;
 			}
 
-			return decoratorInstanceMap.get(this);
+			return decoratorInstanceMap.get(this) as FunctionToMemoize;
 		};
 	};
-	/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access */
 }
 
 /**
@@ -207,7 +201,6 @@ Clear all cached data of a memoized function.
 @param fn - Memoized function.
 */
 export function memClear(fn: AnyFunction): void {
-	/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
 	const cache = cacheStore.get(fn);
 	if (!cache) {
 		throw new TypeError('Can\'t clear a function that was not memoized!');
@@ -218,5 +211,4 @@ export function memClear(fn: AnyFunction): void {
 	}
 
 	cache.clear();
-	/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
 }
