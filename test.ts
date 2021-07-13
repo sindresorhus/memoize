@@ -1,7 +1,7 @@
 import test from 'ava';
 import delay from 'delay';
-import serializeJavascript = require('serialize-javascript');
-import mem = require('.');
+import serializeJavascript from 'serialize-javascript';
+import mem, {memDecorator, memClear} from './index.js';
 
 test('memoize', t => {
 	let i = 0;
@@ -186,7 +186,7 @@ test('cache option', t => {
 	const fixture = (..._arguments: any) => i++;
 	const memoized = mem(fixture, {
 		cache: new WeakMap(),
-		cacheKey: ([firstArgument]) => firstArgument
+		cacheKey: <ReturnValue>([firstArgument]: [ReturnValue]): ReturnValue => firstArgument,
 	});
 	const foo = {};
 	const bar = {};
@@ -215,7 +215,7 @@ test('.clear()', t => {
 	const memoized = mem(fixture);
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
-	mem.clear(memoized);
+	memClear(memoized);
 	t.is(memoized(), 1);
 	t.is(memoized(), 1);
 });
@@ -241,7 +241,7 @@ test('.decorator()', t => {
 	let returnValue = 1;
 
 	class TestClass {
-		@mem.decorator()
+		@memDecorator()
 		counter() {
 			return returnValue;
 		}
@@ -257,25 +257,25 @@ test('.decorator()', t => {
 	t.is(beta.counter(), 2, 'The method should not be memoized across instances');
 });
 
-test('mem.clear() throws when called with a plain function', t => {
+test('memClear() throws when called with a plain function', t => {
 	t.throws(() => {
-		mem.clear(() => {});
+		memClear(() => {});
 	}, {
 		message: 'Can\'t clear a function that was not memoized!',
-		instanceOf: TypeError
+		instanceOf: TypeError,
 	});
 });
 
-test('mem.clear() throws when called on an unclearable cache', t => {
+test('memClear() throws when called on an unclearable cache', t => {
 	const fixture = () => 1;
 	const memoized = mem(fixture, {
-		cache: new WeakMap()
+		cache: new WeakMap(),
 	});
 
 	t.throws(() => {
-		mem.clear(memoized);
+		memClear(memoized);
 	}, {
 		message: 'The cache Map can\'t be cleared!',
-		instanceOf: TypeError
+		instanceOf: TypeError,
 	});
 });
