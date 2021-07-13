@@ -17,8 +17,8 @@ $ npm install mem
 ```js
 import mem from 'mem';
 
-let i = 0;
-const counter = () => ++i;
+let index = 0;
+const counter = () => ++index;
 const memoized = mem(counter);
 
 memoized('foo');
@@ -45,8 +45,8 @@ memoized('bar', 'foo');
 ```js
 import mem from 'mem';
 
-let i = 0;
-const counter = async () => ++i;
+let index = 0;
+const counter = async () => ++index;
 const memoized = mem(counter);
 
 console.log(await memoized());

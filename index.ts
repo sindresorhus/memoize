@@ -76,14 +76,14 @@ interface Options<
 ```
 import mem from 'mem';
 
-let i = 0;
-const counter = () => ++i;
+let index = 0;
+const counter = () => ++index;
 const memoized = mem(counter);
 
 memoized('foo');
 //=> 1
 
-// Cached as it's the same arguments
+// Cached as it's the same argument
 memoized('foo');
 //=> 1
 
