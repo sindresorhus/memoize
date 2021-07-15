@@ -243,15 +243,13 @@ test('.decorator()', t => {
 	class TestClass {
 		@memDecorator()
 		counter() {
-			return returnValue;
+			return returnValue++;
 		}
 	}
 
 	const alpha = new TestClass();
 	t.is(alpha.counter(), 1);
 	t.is(alpha.counter(), 1, 'The method should be memoized');
-
-	returnValue++;
 
 	const beta = new TestClass();
 	t.is(beta.counter(), 2, 'The method should not be memoized across instances');
