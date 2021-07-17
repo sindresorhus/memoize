@@ -239,19 +239,24 @@ test('prototype support', t => {
 
 test('.decorator()', t => {
 	let returnValue = 1;
+	const returnValue2 = 101;
 
 	class TestClass {
 		@memDecorator()
 		counter() {
-			return returnValue;
+			return returnValue++;
+		}
+
+		@memDecorator()
+		counter2() {
+			return returnValue2;
 		}
 	}
 
 	const alpha = new TestClass();
 	t.is(alpha.counter(), 1);
 	t.is(alpha.counter(), 1, 'The method should be memoized');
-
-	returnValue++;
+	t.is(alpha.counter2(), 101, 'The method should be memoized separately from the other one');
 
 	const beta = new TestClass();
 	t.is(beta.counter(), 2, 'The method should not be memoized across instances');
