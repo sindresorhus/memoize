@@ -42,7 +42,9 @@ memoized('bar', 'foo');
 //=> 2
 ```
 
-##### Works fine with promise returning functions
+##### Works well with Promise-returning functions
+
+But you might want to use [p-memoize](https://github.com/sindresorhus/p-memoize) for more Promise-specific behaviors.
 
 ```js
 import mem from 'mem';
