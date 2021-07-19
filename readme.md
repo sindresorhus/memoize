@@ -4,7 +4,7 @@
 
 Memory is automatically released when an item expires or the cache is cleared.
 
-<!-- Please keep this section in sync with p-memoize’s -->
+<!-- Please keep this section in sync with https://github.com/sindresorhus/p-memoize/blob/main/readme.md -->
 
 By default, **only the memoized function's first argument is considered** via strict equality comparison. If you need to cache multiple arguments or cache `object`s *by value*, have a look at alternative [caching strategies](#caching-strategy) below.
 
