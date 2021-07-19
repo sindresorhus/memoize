@@ -6,6 +6,8 @@ Memory is automatically released when an item expires or the cache is cleared.
 
 By default, **only the first argument is considered** and it only works with [primitives](https://developer.mozilla.org/en-US/docs/Glossary/Primitive). If you need to cache multiple arguments or cache `object`s *by value*, have a look at alternative [caching strategies](#caching-strategy) below.
 
+If you want to memoize Promise-returning functions (like `async` functions), you might be better served by [p-memoize](https://github.com/sindresorhus/p-memoize).
+
 ## Install
 
 ```
