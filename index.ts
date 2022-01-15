@@ -18,7 +18,7 @@ interface CacheStorage<KeyType, ValueType> {
 	clear?: () => void;
 }
 
-interface Options<
+export interface Options<
 	FunctionToMemoize extends AnyFunction,
 	CacheKeyType,
 > {
