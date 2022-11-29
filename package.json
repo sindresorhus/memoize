@@ -19,7 +19,7 @@
 	"scripts": {
 		"test": "xo && ava && npm run build && tsd",
 		"build": "del-cli dist && tsc",
-		"prepack": "npm run build"
+		"prepare": "npm run build"
 	},
 	"types": "dist/index.d.ts",
 	"files": [
