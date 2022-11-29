@@ -15,6 +15,7 @@
 	"engines": {
 		"node": ">=12.20"
 	},
+	"main": "dist/index.js",
 	"scripts": {
 		"test": "xo && ava && npm run build && tsd",
 		"build": "del-cli dist && tsc",
