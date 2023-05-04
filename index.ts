@@ -5,23 +5,23 @@ type AnyFunction = (...arguments_: any) => any;
 
 const cacheStore = new WeakMap<AnyFunction, CacheStorage<any, any>>();
 
-interface CacheStorageContent<ValueType> {
+type CacheStorageContent<ValueType> = {
 	data: ValueType;
 	maxAge: number;
-}
+};
 
-interface CacheStorage<KeyType, ValueType> {
+type CacheStorage<KeyType, ValueType> = {
 	has: (key: KeyType) => boolean;
 	get: (key: KeyType) => CacheStorageContent<ValueType> | undefined;
 	set: (key: KeyType, value: CacheStorageContent<ValueType>) => void;
 	delete: (key: KeyType) => void;
 	clear?: () => void;
-}
+};
 
-export interface Options<
+export type Options<
 	FunctionToMemoize extends AnyFunction,
 	CacheKeyType,
-> {
+> = {
 	/**
 	Milliseconds until the cache expires.
 
@@ -63,7 +63,7 @@ export interface Options<
 	@example new WeakMap()
 	*/
 	readonly cache?: CacheStorage<CacheKeyType, ReturnType<FunctionToMemoize>>;
-}
+};
 
 /**
 [Memoize](https://en.wikipedia.org/wiki/Memoization) functions - An optimization used to speed up consecutive function calls by caching the result of calls with identical input.
@@ -174,7 +174,7 @@ export function memDecorator<
 		propertyKey: string,
 		descriptor: PropertyDescriptor,
 	): void => {
-		const input = target[propertyKey]; // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+		const input = target[propertyKey]; // eslint-disable-line @typescript-eslint/no-unsafe-assignment
 
 		if (typeof input !== 'function') {
 			throw new TypeError('The decorated value must be a function');
