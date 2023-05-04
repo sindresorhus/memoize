@@ -42,7 +42,6 @@
 		"mimic-fn": "^4.0.0"
 	},
 	"devDependencies": {
-		"@ava/typescript": "^4.0.0",
 		"@sindresorhus/tsconfig": "^3.0.1",
 		"@types/serialize-javascript": "^5.0.2",
 		"ava": "^5.2.0",
