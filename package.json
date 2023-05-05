@@ -54,6 +54,7 @@
 		"xo": "^0.54.2"
 	},
 	"ava": {
+		"timeout": "1m",
 		"extensions": {
 			"ts": "module"
 		},
