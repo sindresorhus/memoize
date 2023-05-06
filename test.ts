@@ -5,48 +5,30 @@ import mem, {memDecorator, memClear} from './index.js';
 
 test('memoize', t => {
 	let i = 0;
-	const fixture = () => i++;
+	const fixture = (a?: unknown, b?: unknown) => i++;
 	const memoized = mem(fixture);
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
-	// @ts-expect-error
 	t.is(memoized(undefined), 0);
-	// @ts-expect-error
 	t.is(memoized(undefined), 0);
-	// @ts-expect-error
 	t.is(memoized('foo'), 1);
-	// @ts-expect-error
 	t.is(memoized('foo'), 1);
-	// @ts-expect-error
 	t.is(memoized('foo'), 1);
-	// @ts-expect-error
 	t.is(memoized('foo', 'bar'), 1);
-	// @ts-expect-error
 	t.is(memoized('foo', 'bar'), 1);
-	// @ts-expect-error
 	t.is(memoized('foo', 'bar'), 1);
-	// @ts-expect-error
 	t.is(memoized(1), 2);
-	// @ts-expect-error
 	t.is(memoized(1), 2);
-	// @ts-expect-error
 	t.is(memoized(null), 3);
-	// @ts-expect-error
 	t.is(memoized(null), 3);
-	// @ts-expect-error
 	t.is(memoized(fixture), 4);
-	// @ts-expect-error
 	t.is(memoized(fixture), 4);
-	// @ts-expect-error
 	t.is(memoized(true), 5);
-	// @ts-expect-error
 	t.is(memoized(true), 5);
 
 	// Ensure that functions are stored by reference and not by "value" (e.g. their `.toString()` representation)
-	// @ts-expect-error
 	t.is(memoized(() => i++), 6);
-	// @ts-expect-error
 	t.is(memoized(() => i++), 7);
 });
 
@@ -63,31 +45,23 @@ test('cacheKey option', t => {
 
 test('memoize with multiple non-primitive arguments', t => {
 	let i = 0;
-	const memoized = mem(() => i++, {cacheKey: JSON.stringify});
+	const memoized = mem((a?: unknown, b?: unknown, c?: unknown) => i++, {cacheKey: JSON.stringify});
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
-	// @ts-expect-error
 	t.is(memoized({foo: true}, {bar: false}), 1);
-	// @ts-expect-error
 	t.is(memoized({foo: true}, {bar: false}), 1);
-	// @ts-expect-error
 	t.is(memoized({foo: true}, {bar: false}, {baz: true}), 2);
-	// @ts-expect-error
 	t.is(memoized({foo: true}, {bar: false}, {baz: true}), 2);
 });
 
 test('memoize with regexp arguments', t => {
 	let i = 0;
-	const memoized = mem(() => i++, {cacheKey: serializeJavascript});
+	const memoized = mem((a?: unknown) => i++, {cacheKey: serializeJavascript});
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
-	// @ts-expect-error
 	t.is(memoized(/Sindre Sorhus/), 1);
-	// @ts-expect-error
 	t.is(memoized(/Sindre Sorhus/), 1);
-	// @ts-expect-error
 	t.is(memoized(/Elvin Peng/), 2);
-	// @ts-expect-error
 	t.is(memoized(/Elvin Peng/), 2);
 });
 
@@ -95,38 +69,30 @@ test('memoize with Symbol arguments', t => {
 	let i = 0;
 	const argument1 = Symbol('fixture1');
 	const argument2 = Symbol('fixture2');
-	const memoized = mem(() => i++);
+	const memoized = mem((a?: unknown) => i++);
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
-	// @ts-expect-error
 	t.is(memoized(argument1), 1);
-	// @ts-expect-error
 	t.is(memoized(argument1), 1);
-	// @ts-expect-error
 	t.is(memoized(argument2), 2);
-	// @ts-expect-error
 	t.is(memoized(argument2), 2);
 });
 
 test('maxAge option', async t => {
 	let i = 0;
-	const fixture = () => i++;
+	const fixture = (a?: unknown) => i++;
 	const memoized = mem(fixture, {maxAge: 100});
-	// @ts-expect-error
 	t.is(memoized(1), 0);
-	// @ts-expect-error
 	t.is(memoized(1), 0);
 	await delay(50);
-	// @ts-expect-error
 	t.is(memoized(1), 0);
 	await delay(200);
-	// @ts-expect-error
 	t.is(memoized(1), 1);
 });
 
 test('maxAge option deletes old items', async t => {
 	let i = 0;
-	const fixture = () => i++;
+	const fixture = (a?: unknown) => i++;
 	const cache = new Map<number, number>();
 	const deleted: number[] = [];
 	const _delete = cache.delete.bind(cache);
@@ -135,19 +101,14 @@ test('maxAge option deletes old items', async t => {
 		return _delete(item);
 	};
 
-	// @ts-expect-error
 	const memoized = mem(fixture, {maxAge: 100, cache});
-	// @ts-expect-error
 	t.is(memoized(1), 0);
-	// @ts-expect-error
 	t.is(memoized(1), 0);
 	t.is(cache.has(1), true);
 	await delay(50);
-	// @ts-expect-error
 	t.is(memoized(1), 0);
 	t.is(deleted.length, 0);
 	await delay(200);
-	// @ts-expect-error
 	t.is(memoized(1), 1);
 	t.is(deleted.length, 1);
 	t.is(deleted[0], 1);
@@ -155,7 +116,7 @@ test('maxAge option deletes old items', async t => {
 
 test('maxAge items are deleted even if function throws', async t => {
 	let i = 0;
-	const fixture = () => {
+	const fixture = (a?: unknown) => {
 		if (i === 1) {
 			throw new Error('failure');
 		}
@@ -165,17 +126,13 @@ test('maxAge items are deleted even if function throws', async t => {
 
 	const cache = new Map();
 	const memoized = mem(fixture, {maxAge: 100, cache});
-	// @ts-expect-error
 	t.is(memoized(1), 0);
-	// @ts-expect-error
 	t.is(memoized(1), 0);
 	t.is(cache.size, 1);
 	await delay(50);
-	// @ts-expect-error
 	t.is(memoized(1), 0);
 	await delay(200);
 	t.throws(() => {
-		// @ts-expect-error
 		memoized(1);
 	}, {message: 'failure'});
 	t.is(cache.size, 0);
@@ -198,10 +155,9 @@ test('cache option', t => {
 
 test('promise support', async t => {
 	let i = 0;
-	const memoized = mem(async () => i++);
+	const memoized = mem(async (a?: unknown) => i++);
 	t.is(await memoized(), 0);
 	t.is(await memoized(), 0);
-	// @ts-expect-error
 	t.is(await memoized(10), 1);
 });
 

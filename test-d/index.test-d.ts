@@ -1,6 +1,7 @@
 import {expectType} from 'tsd';
-import mem, {memClear} from '..';
+import mem, {memClear} from '../index.js';
 
+// eslint-disable-next-line unicorn/prefer-native-coercion-functions -- Required `string` type
 const fn = (text: string) => Boolean(text);
 
 expectType<typeof fn>(mem(fn));
@@ -33,26 +34,27 @@ memClear(fn);
 
 // `cacheKey` tests.
 // The argument should match the memoized function’s parameters
+// eslint-disable-next-line unicorn/prefer-native-coercion-functions -- Required `string` type
 mem((text: string) => Boolean(text), {
-	cacheKey: arguments_ => {
+	cacheKey(arguments_) {
 		expectType<[string]>(arguments_);
 	},
 });
 
 mem(() => 1, {
-	cacheKey: arguments_ => {
+	cacheKey(arguments_) {
 		expectType<[]>(arguments_); // eslint-disable-line @typescript-eslint/ban-types
 	},
 });
 
 // Ensures that the various cache functions infer their arguments type from the return type of `cacheKey`
 mem((_arguments: {key: string}) => 1, {
-	cacheKey: (arguments_: [{key: string}]) => {
+	cacheKey(arguments_: [{key: string}]) {
 		expectType<[{key: string}]>(arguments_);
 		return new Date();
 	},
 	cache: {
-		get: key => {
+		get(key) {
 			expectType<Date>(key);
 
 			return {
@@ -60,15 +62,15 @@ mem((_arguments: {key: string}) => 1, {
 				maxAge: 2,
 			};
 		},
-		set: (key, data) => {
+		set(key, data) {
 			expectType<Date>(key);
 			expectType<{data: number; maxAge: number}>(data);
 		},
-		has: key => {
+		has(key) {
 			expectType<Date>(key);
 			return true;
 		},
-		delete: key => {
+		delete(key) {
 			expectType<Date>(key);
 		},
 		clear: () => undefined,
