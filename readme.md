@@ -88,10 +88,10 @@ By default, only the first argument is compared via exact equality (`===`) to de
 ```js
 import memoize from 'memoize';
 
-const power = memoize((a, b) => Math.power(a, b));
+const pow = memoize((a, b) => Math.pow(a, b));
 
-power(2, 2); // => 4, stored in cache with the key 2 (number)
-power(2, 3); // => 4, retrieved from cache at key 2 (number), it's wrong
+pow(2, 2); // => 4, stored in cache with the key 2 (number)
+pow(2, 3); // => 4, retrieved from cache at key 2 (number), it's wrong
 ```
 
 You will have to use the `cache` and `cacheKey` options appropriate to your function. In this specific case, the following could work:
@@ -99,12 +99,12 @@ You will have to use the `cache` and `cacheKey` options appropriate to your func
 ```js
 import memoize from 'memoize';
 
-const power = memoize((a, b) => Math.power(a, b), {
+const pow = memoize((a, b) => Math.pow(a, b), {
   cacheKey: arguments_ => arguments_.join(',')
 });
 
-power(2, 2); // => 4, stored in cache with the key '2,2' (both arguments as one string)
-power(2, 3); // => 8, stored in cache with the key '2,3'
+pow(2, 2); // => 4, stored in cache with the key '2,2' (both arguments as one string)
+pow(2, 3); // => 8, stored in cache with the key '2,3'
 ```
 
 More advanced examples follow.
@@ -120,7 +120,7 @@ const heavyMemoizedOperation = memoize(heavyOperation);
 
 heavyMemoizedOperation({full: true}); // Stored in cache with the object as key
 heavyMemoizedOperation({full: true}); // Stored in cache with the object as key, again
-// The objects look the same but for JS they're two different objects
+// The objects appear the same, but in JavaScript, they're different objects
 ```
 
 You might want to serialize or hash them, for example using `JSON.stringify` or something like [serialize-javascript](https://github.com/yahoo/serialize-javascript), which can also serialize `RegExp`, `Date` and so on.
@@ -161,7 +161,7 @@ const addOneListener = memoize(addListener, {
 });
 
 addOneListener(header, 'click', console.log); // `addListener` is run, and it's cached with the `arguments` array as key
-addOneListener(header, 'click', console.log); // `addListener` is not run again
+addOneListener(header, 'click', console.log); // `addListener` is not run again because the arguments are the same
 addOneListener(mainContent, 'load', console.log); // `addListener` is run, and it's cached with the `arguments` array as key
 ```
 
@@ -186,7 +186,7 @@ Type: `object`
 Type: `number`\
 Default: `Infinity`
 
-Milliseconds until the cache expires.
+Milliseconds until the cache entry expires.
 
 ##### cacheKey
 
@@ -209,7 +209,7 @@ Use a different cache storage. Must implement the following methods: `.has(key)`
 
 Refer to the [caching strategies](#caching-strategy) section for more information.
 
-### memDecorator(options)
+### memoizeDecorator(options)
 
 Returns a [decorator](https://github.com/tc39/proposal-decorators) to memoize class methods or static class methods.
 

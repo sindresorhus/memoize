@@ -23,7 +23,7 @@ export type Options<
 	CacheKeyType,
 > = {
 	/**
-	Milliseconds until the cache expires.
+	Milliseconds until the cache entry expires.
 
 	@default Infinity
 	*/
