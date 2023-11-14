@@ -108,8 +108,15 @@ export default function mem<
 		return fn;
 	}
 
-	if (typeof maxAge === 'number' && maxAge < 0) {
-		throw new TypeError('The `maxAge` option should not be a negative number.');
+	if (typeof maxAge === 'number') {
+		const maxSetIntervalValue = 2_147_483_647;
+		if (maxAge > maxSetIntervalValue) {
+			throw new TypeError(`The \`maxAge\` option cannot exceed ${maxSetIntervalValue}.`);
+		}
+
+		if (maxAge < 0) {
+			throw new TypeError('The `maxAge` option should not be a negative number.');
+		}
 	}
 
 	const memoized = function (this: any, ...arguments_: Parameters<FunctionToMemoize>): ReturnType<FunctionToMemoize> {
@@ -226,7 +233,7 @@ export function memClear(fn: AnyFunction): void {
 		throw new TypeError('The cache Map can\'t be cleared!');
 	}
 
-	cache.clear();
+	cache.clear?.();
 
 	for (const timer of cacheTimerStore.get(fn) ?? []) {
 		clearTimeout(timer);
