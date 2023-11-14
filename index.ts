@@ -37,18 +37,18 @@ export type Options<
 	You can have it cache **all** the arguments by value with `JSON.stringify`, if they are compatible:
 
 	```
-	import mem from 'mem';
+	import memoize from 'memoize';
 
-	mem(function_, {cacheKey: JSON.stringify});
+	memoize(function_, {cacheKey: JSON.stringify});
 	```
 
 	Or you can use a more full-featured serializer like [serialize-javascript](https://github.com/yahoo/serialize-javascript) to add support for `RegExp`, `Date` and so on.
 
 	```
-	import mem from 'mem';
+	import memoize from 'memoize';
 	import serializeJavascript from 'serialize-javascript';
 
-	mem(function_, {cacheKey: serializeJavascript});
+	memoize(function_, {cacheKey: serializeJavascript});
 	```
 
 	@default arguments_ => arguments_[0]
@@ -72,11 +72,11 @@ export type Options<
 
 @example
 ```
-import mem from 'mem';
+import memoize from 'memoize';
 
 let index = 0;
 const counter = () => ++index;
-const memoized = mem(counter);
+const memoized = memoize(counter);
 
 memoized('foo');
 //=> 1
@@ -93,7 +93,7 @@ memoized('bar');
 //=> 2
 ```
 */
-export default function mem<
+export default function memoize<
 	FunctionToMemoize extends AnyFunction,
 	CacheKeyType,
 >(
@@ -163,12 +163,12 @@ export default function mem<
 
 @example
 ```
-import {memDecorator} from 'mem';
+import {memoizeDecorator} from 'memoize';
 
 class Example {
 	index = 0
 
-	@memDecorator()
+	@memoizeDecorator()
 	counter() {
 		return ++this.index;
 	}
@@ -177,14 +177,14 @@ class Example {
 class ExampleWithOptions {
 	index = 0
 
-	@memDecorator({maxAge: 1000})
+	@memoizeDecorator({maxAge: 1000})
 	counter() {
 		return ++this.index;
 	}
 }
 ```
 */
-export function memDecorator<
+export function memoizeDecorator<
 	FunctionToMemoize extends AnyFunction,
 	CacheKeyType,
 >(
@@ -208,7 +208,7 @@ export function memDecorator<
 
 		descriptor.get = function () {
 			if (!instanceMap.has(this)) {
-				const value = mem(input, options) as FunctionToMemoize;
+				const value = memoize(input, options) as FunctionToMemoize;
 				instanceMap.set(this, value);
 				return value;
 			}
@@ -223,7 +223,7 @@ Clear all cached data of a memoized function.
 
 @param fn - The memoized function.
 */
-export function memClear(fn: AnyFunction): void {
+export function memoizeClear(fn: AnyFunction): void {
 	const cache = cacheStore.get(fn);
 	if (!cache) {
 		throw new TypeError('Can\'t clear a function that was not memoized!');
@@ -233,7 +233,7 @@ export function memClear(fn: AnyFunction): void {
 		throw new TypeError('The cache Map can\'t be cleared!');
 	}
 
-	cache.clear?.();
+	cache.clear();
 
 	for (const timer of cacheTimerStore.get(fn) ?? []) {
 		clearTimeout(timer);

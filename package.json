@@ -1,10 +1,10 @@
 {
-	"name": "mem",
+	"name": "memoize",
 	"version": "9.0.2",
 	"description": "Memoize functions - An optimization used to speed up consecutive function calls by caching the result of calls with identical input",
 	"license": "MIT",
-	"repository": "sindresorhus/mem",
-	"funding": "https://github.com/sindresorhus/mem?sponsor=1",
+	"repository": "sindresorhus/memoize",
+	"funding": "https://github.com/sindresorhus/memoize?sponsor=1",
 	"author": {
 		"name": "Sindre Sorhus",
 		"email": "sindresorhus@gmail.com",

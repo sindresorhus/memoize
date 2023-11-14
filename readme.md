@@ -1,4 +1,4 @@
-# mem
+# memoize
 
 > [Memoize](https://en.wikipedia.org/wiki/Memoization) functions - An optimization used to speed up consecutive function calls by caching the result of calls with identical input
 
@@ -13,17 +13,17 @@ If you want to memoize Promise-returning functions (like `async` functions), you
 ## Install
 
 ```sh
-npm install mem
+npm install memoize
 ```
 
 ## Usage
 
 ```js
-import mem from 'mem';
+import memoize from 'memoize';
 
 let index = 0;
 const counter = () => ++index;
-const memoized = mem(counter);
+const memoized = memoize(counter);
 
 memoized('foo');
 //=> 1
@@ -49,11 +49,11 @@ memoized('bar', 'foo');
 But you might want to use [p-memoize](https://github.com/sindresorhus/p-memoize) for more Promise-specific behaviors.
 
 ```js
-import mem from 'mem';
+import memoize from 'memoize';
 
 let index = 0;
 const counter = async () => ++index;
-const memoized = mem(counter);
+const memoized = memoize(counter);
 
 console.log(await memoized());
 //=> 1
@@ -64,21 +64,21 @@ console.log(await memoized());
 ```
 
 ```js
-import mem from 'mem';
+import memoize from 'memoize';
 import got from 'got';
 import delay from 'delay';
 
-const memGot = mem(got, {maxAge: 1000});
+const memoizedGot = memoize(got, {maxAge: 1000});
 
-await memGot('https://sindresorhus.com');
+await memoizedGot('https://sindresorhus.com');
 
 // This call is cached
-await memGot('https://sindresorhus.com');
+await memoizedGot('https://sindresorhus.com');
 
 await delay(2000);
 
 // This call is not cached as the cache has expired
-await memGot('https://sindresorhus.com');
+await memoizedGot('https://sindresorhus.com');
 ```
 
 ### Caching strategy
@@ -86,7 +86,9 @@ await memGot('https://sindresorhus.com');
 By default, only the first argument is compared via exact equality (`===`) to determine whether a call is identical.
 
 ```js
-const power = mem((a, b) => Math.power(a, b));
+import memoize from 'memoize';
+
+const power = memoize((a, b) => Math.power(a, b));
 
 power(2, 2); // => 4, stored in cache with the key 2 (number)
 power(2, 3); // => 4, retrieved from cache at key 2 (number), it's wrong
@@ -95,7 +97,9 @@ power(2, 3); // => 4, retrieved from cache at key 2 (number), it's wrong
 You will have to use the `cache` and `cacheKey` options appropriate to your function. In this specific case, the following could work:
 
 ```js
-const power = mem((a, b) => Math.power(a, b), {
+import memoize from 'memoize';
+
+const power = memoize((a, b) => Math.power(a, b), {
   cacheKey: arguments_ => arguments_.join(',')
 });
 
@@ -110,7 +114,9 @@ More advanced examples follow.
 If your function accepts an object, it won't be memoized out of the box:
 
 ```js
-const heavyMemoizedOperation = mem(heavyOperation);
+import memoize from 'memoize';
+
+const heavyMemoizedOperation = memoize(heavyOperation);
 
 heavyMemoizedOperation({full: true}); // Stored in cache with the object as key
 heavyMemoizedOperation({full: true}); // Stored in cache with the object as key, again
@@ -120,7 +126,9 @@ heavyMemoizedOperation({full: true}); // Stored in cache with the object as key,
 You might want to serialize or hash them, for example using `JSON.stringify` or something like [serialize-javascript](https://github.com/yahoo/serialize-javascript), which can also serialize `RegExp`, `Date` and so on.
 
 ```js
-const heavyMemoizedOperation = mem(heavyOperation, {cacheKey: JSON.stringify});
+import memoize from 'memoize';
+
+const heavyMemoizedOperation = memoize(heavyOperation, {cacheKey: JSON.stringify});
 
 heavyMemoizedOperation({full: true}); // Stored in cache with the key '[{"full":true}]' (string)
 heavyMemoizedOperation({full: true}); // Retrieved from cache
@@ -129,7 +137,9 @@ heavyMemoizedOperation({full: true}); // Retrieved from cache
 The same solution also works if it accepts multiple serializable objects:
 
 ```js
-const heavyMemoizedOperation = mem(heavyOperation, {cacheKey: JSON.stringify});
+import memoize from 'memoize';
+
+const heavyMemoizedOperation = memoize(heavyOperation, {cacheKey: JSON.stringify});
 
 heavyMemoizedOperation('hello', {full: true}); // Stored in cache with the key '["hello",{"full":true}]' (string)
 heavyMemoizedOperation('hello', {full: true}); // Retrieved from cache
@@ -140,11 +150,12 @@ heavyMemoizedOperation('hello', {full: true}); // Retrieved from cache
 If your function accepts multiple arguments that aren't supported by `JSON.stringify` (e.g. DOM elements and functions), you can instead extend the initial exact equality (`===`) to work on multiple arguments using [`many-keys-map`](https://github.com/fregante/many-keys-map):
 
 ```js
+import memoize from 'memoize';
 import ManyKeysMap from 'many-keys-map';
 
 const addListener = (emitter, eventName, listener) => emitter.on(eventName, listener);
 
-const addOneListener = mem(addListener, {
+const addOneListener = memoize(addListener, {
 	cacheKey: arguments_ => arguments_, // Use *all* the arguments as key
 	cache: new ManyKeysMap() // Correctly handles all the arguments for exact equality
 });
@@ -158,7 +169,7 @@ Better yet, if your function’s arguments are compatible with `WeakMap`, you sh
 
 ## API
 
-### mem(fn, options?)
+### memoize(fn, options?)
 
 #### fn
 
@@ -212,15 +223,15 @@ Notes:
 
 Type: `object`
 
-Same as options for `mem()`.
+Same as options for `memoize()`.
 
 ```ts
-import {memDecorator} from 'mem';
+import {memoizeDecorator} from 'memoize';
 
 class Example {
 	index = 0
 
-	@memDecorator()
+	@memoizeDecorator()
 	counter() {
 		return ++this.index;
 	}
@@ -229,14 +240,14 @@ class Example {
 class ExampleWithOptions {
 	index = 0
 
-	@memDecorator({maxAge: 1000})
+	@memoizeDecorator({maxAge: 1000})
 	counter() {
 		return ++this.index;
 	}
 }
 ```
 
-### memClear(fn)
+### memoizeClear(fn)
 
 Clear all cached data of a memoized function.
 
@@ -255,16 +266,16 @@ If you want to know how many times your cache had a hit or a miss, you can make 
 #### Example
 
 ```js
-import mem from 'mem';
+import memoize from 'memoize';
 import StatsMap from 'stats-map';
 import got from 'got';
 
 const cache = new StatsMap();
-const memGot = mem(got, {cache});
+const memoizedGot = memoize(got, {cache});
 
-await memGot('https://sindresorhus.com');
-await memGot('https://sindresorhus.com');
-await memGot('https://sindresorhus.com');
+await memoizedGot('https://sindresorhus.com');
+await memoizedGot('https://sindresorhus.com');
+await memoizedGot('https://sindresorhus.com');
 
 console.log(cache.stats);
 //=> {hits: 2, misses: 1}

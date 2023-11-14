@@ -1,14 +1,14 @@
 import {expectType} from 'tsd';
-import mem, {memClear} from '../index.js';
+import memoize, {memoizeClear} from '../index.js';
 
 // eslint-disable-next-line unicorn/prefer-native-coercion-functions -- Required `string` type
 const fn = (text: string) => Boolean(text);
 
-expectType<typeof fn>(mem(fn));
-expectType<typeof fn>(mem(fn, {maxAge: 1}));
-expectType<typeof fn>(mem(fn, {cacheKey: ([firstArgument]: [string]) => firstArgument}));
+expectType<typeof fn>(memoize(fn));
+expectType<typeof fn>(memoize(fn, {maxAge: 1}));
+expectType<typeof fn>(memoize(fn, {cacheKey: ([firstArgument]: [string]) => firstArgument}));
 expectType<typeof fn>(
-	mem(fn, {
+	memoize(fn, {
 		// The cacheKey returns an array. This isn't deduplicated by a regular Map, but it's valid. The correct solution would be to use ManyKeysMap to deduplicate it correctly
 		cacheKey: (arguments_: [string]) => arguments_,
 		cache: new Map<[string], {data: boolean; maxAge: number}>(),
@@ -16,7 +16,7 @@ expectType<typeof fn>(
 );
 expectType<typeof fn>(
 	// The `firstArgument` of `fn` is of type `string`, so it's used
-	mem(fn, {cache: new Map<string, {data: boolean; maxAge: number}>()}),
+	memoize(fn, {cache: new Map<string, {data: boolean; maxAge: number}>()}),
 );
 
 /* Overloaded function tests */
@@ -26,29 +26,29 @@ function overloadedFn(parameter: boolean): boolean {
 	return parameter;
 }
 
-expectType<typeof overloadedFn>(mem(overloadedFn));
-expectType<true>(mem(overloadedFn)(true));
-expectType<false>(mem(overloadedFn)(false));
+expectType<typeof overloadedFn>(memoize(overloadedFn));
+expectType<true>(memoize(overloadedFn)(true));
+expectType<false>(memoize(overloadedFn)(false));
 
-memClear(fn);
+memoizeClear(fn);
 
 // `cacheKey` tests.
 // The argument should match the memoized function’s parameters
 // eslint-disable-next-line unicorn/prefer-native-coercion-functions -- Required `string` type
-mem((text: string) => Boolean(text), {
+memoize((text: string) => Boolean(text), {
 	cacheKey(arguments_) {
 		expectType<[string]>(arguments_);
 	},
 });
 
-mem(() => 1, {
+memoize(() => 1, {
 	cacheKey(arguments_) {
 		expectType<[]>(arguments_); // eslint-disable-line @typescript-eslint/ban-types
 	},
 });
 
 // Ensures that the various cache functions infer their arguments type from the return type of `cacheKey`
-mem((_arguments: {key: string}) => 1, {
+memoize((_arguments: {key: string}) => 1, {
 	cacheKey(arguments_: [{key: string}]) {
 		expectType<[{key: string}]>(arguments_);
 		return new Date();
