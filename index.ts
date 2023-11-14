@@ -104,8 +104,12 @@ export default function mem<
 		maxAge,
 	}: Options<FunctionToMemoize, CacheKeyType> = {},
 ): FunctionToMemoize {
-	if (typeof maxAge === 'number' && maxAge <= 0) {
+	if (maxAge === 0) {
 		return fn;
+	}
+
+	if (typeof maxAge === 'number' && maxAge < 0) {
+		throw new TypeError('The `maxAge` option should not be a negative number.');
 	}
 
 	const memoized = function (this: any, ...arguments_: Parameters<FunctionToMemoize>): ReturnType<FunctionToMemoize> {
@@ -131,7 +135,7 @@ export default function mem<
 			timer.unref?.();
 
 			const timers = cacheTimerStore.get(fn) ?? new Set<number>();
-			timers.add(timer as number);
+			timers.add(timer as unknown as number);
 			cacheTimerStore.set(fn, timers);
 		}
 
