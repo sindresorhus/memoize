@@ -130,8 +130,8 @@ export default function mem<
 
 			timer.unref?.();
 
-			const timers = cacheTimerStore.get(fn) ?? new Set();
-			timers.add(timer as any); // eslint-disable-line @typescript-eslint/no-unsafe-argument
+			const timers = cacheTimerStore.get(fn) ?? new Set<number>();
+			timers.add(timer as number);
 			cacheTimerStore.set(fn, timers);
 		}
 
