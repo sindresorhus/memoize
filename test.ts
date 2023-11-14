@@ -240,3 +240,79 @@ test('memClear() throws when called on an unclearable cache', t => {
 		instanceOf: TypeError,
 	});
 });
+
+test('maxAge - cache item expires after specified duration', async t => {
+	let i = 0;
+	const fixture = () => i++;
+	const memoized = mem(fixture, {maxAge: 100});
+
+	t.is(memoized(), 0); // Initial call, cached
+	t.is(memoized(), 0); // Subsequent call, still cached
+	await delay(150); // Wait for longer than maxAge
+	t.is(memoized(), 1); // Cache expired, should compute again
+});
+
+test('maxAge - cache expiration timing is accurate', async t => {
+	let i = 0;
+	const fixture = () => i++;
+	const memoized = mem(fixture, {maxAge: 100});
+
+	t.is(memoized(), 0);
+	await delay(90); // Wait for slightly less than maxAge
+	t.is(memoized(), 0); // Should still be cached
+	await delay(20); // Total delay now exceeds maxAge
+	t.is(memoized(), 1); // Should recompute as cache has expired
+});
+
+test('maxAge - expired items are not present in cache', async t => {
+	let i = 0;
+	const fixture = () => i++;
+	const cache = new Map();
+	const memoized = mem(fixture, {maxAge: 100, cache});
+
+	memoized(); // Call to cache the result
+	await delay(150); // Wait for cache to expire
+	memoized(); // Recompute and recache
+	t.is(cache.size, 1); // Only one item should be in the cache
+});
+
+test('maxAge - complex arguments and cache expiration', async t => {
+	let i = 0;
+	const fixture = object => i++;
+	const memoized = mem(fixture, {maxAge: 100, cacheKey: JSON.stringify});
+
+	const arg = {key: 'value'};
+	t.is(memoized(arg), 0);
+	await delay(150);
+	t.is(memoized(arg), 1); // Argument is the same, but should recompute due to expiration
+});
+
+test('maxAge - concurrent calls return cached value', async t => {
+	let i = 0;
+	const fixture = () => i++;
+	const memoized = mem(fixture, {maxAge: 100});
+
+	t.is(memoized(), 0);
+	await delay(50); // Delay less than maxAge
+	t.is(memoized(), 0); // Should return cached value
+});
+
+test('maxAge - different arguments have separate expirations', async t => {
+	let i = 0;
+	const fixture = x => i++;
+	const memoized = mem(fixture, {maxAge: 100});
+
+	t.is(memoized('a'), 0);
+	await delay(150); // Expire the cache for 'a'
+	t.is(memoized('b'), 1); // 'b' should be a separate cache entry
+	t.is(memoized('a'), 2); // 'a' should be recomputed
+});
+
+test('maxAge - zero maxAge means no caching', t => {
+	let i = 0;
+	const fixture = () => i++;
+	const memoized = mem(fixture, {maxAge: 0});
+
+	t.is(memoized(), 0);
+	t.is(memoized(), 1); // No caching, should increment
+});

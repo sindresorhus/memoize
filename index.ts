@@ -1,9 +1,9 @@
 import mimicFunction from 'mimic-function';
-import mapAgeCleaner from 'map-age-cleaner';
 
-type AnyFunction = (...arguments_: readonly any[]) => any;
+type AnyFunction = (...arguments_: readonly any[]) => unknown;
 
 const cacheStore = new WeakMap<AnyFunction, CacheStorage<any, any>>();
+const cacheTimerStore = new WeakMap<AnyFunction, Set<number>>();
 
 type CacheStorageContent<ValueType> = {
 	data: ValueType;
@@ -104,8 +104,8 @@ export default function mem<
 		maxAge,
 	}: Options<FunctionToMemoize, CacheKeyType> = {},
 ): FunctionToMemoize {
-	if (typeof maxAge === 'number') {
-		mapAgeCleaner(cache as unknown as Map<CacheKeyType, ReturnType<FunctionToMemoize>>);
+	if (typeof maxAge === 'number' && maxAge <= 0) {
+		return fn;
 	}
 
 	const memoized = function (this: any, ...arguments_: Parameters<FunctionToMemoize>): ReturnType<FunctionToMemoize> {
@@ -122,6 +122,18 @@ export default function mem<
 			data: result,
 			maxAge: maxAge ? Date.now() + maxAge : Number.POSITIVE_INFINITY,
 		});
+
+		if (typeof maxAge === 'number' && maxAge !== Number.POSITIVE_INFINITY) {
+			const timer = setTimeout(() => {
+				cache.delete(key);
+			}, maxAge);
+
+			timer.unref?.();
+
+			const timers = cacheTimerStore.get(fn) ?? new Set();
+			timers.add(timer as any); // eslint-disable-line @typescript-eslint/no-unsafe-argument
+			cacheTimerStore.set(fn, timers);
+		}
 
 		return result;
 	} as FunctionToMemoize;
@@ -198,7 +210,7 @@ export function memDecorator<
 /**
 Clear all cached data of a memoized function.
 
-@param fn - Memoized function.
+@param fn - The memoized function.
 */
 export function memClear(fn: AnyFunction): void {
 	const cache = cacheStore.get(fn);
@@ -211,4 +223,8 @@ export function memClear(fn: AnyFunction): void {
 	}
 
 	cache.clear();
+
+	for (const timer of cacheTimerStore.get(fn) ?? []) {
+		clearTimeout(timer);
+	}
 }

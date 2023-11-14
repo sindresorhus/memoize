@@ -244,7 +244,7 @@ Clear all cached data of a memoized function.
 
 Type: `Function`
 
-Memoized function.
+The memoized function.
 
 ## Tips
 
