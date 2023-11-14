@@ -41,7 +41,6 @@
 		"promise"
 	],
 	"dependencies": {
-		"map-age-cleaner": "^0.2.0",
 		"mimic-function": "^5.0.0"
 	},
 	"devDependencies": {

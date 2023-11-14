@@ -1,9 +1,9 @@
 import mimicFunction from 'mimic-function';
-import mapAgeCleaner from 'map-age-cleaner';
 
-type AnyFunction = (...arguments_: readonly any[]) => any;
+type AnyFunction = (...arguments_: readonly any[]) => unknown;
 
 const cacheStore = new WeakMap<AnyFunction, CacheStorage<any, any>>();
+const cacheTimerStore = new WeakMap<AnyFunction, Set<number>>();
 
 type CacheStorageContent<ValueType> = {
 	data: ValueType;
@@ -104,8 +104,19 @@ export default function mem<
 		maxAge,
 	}: Options<FunctionToMemoize, CacheKeyType> = {},
 ): FunctionToMemoize {
+	if (maxAge === 0) {
+		return fn;
+	}
+
 	if (typeof maxAge === 'number') {
-		mapAgeCleaner(cache as unknown as Map<CacheKeyType, ReturnType<FunctionToMemoize>>);
+		const maxSetIntervalValue = 2_147_483_647;
+		if (maxAge > maxSetIntervalValue) {
+			throw new TypeError(`The \`maxAge\` option cannot exceed ${maxSetIntervalValue}.`);
+		}
+
+		if (maxAge < 0) {
+			throw new TypeError('The `maxAge` option should not be a negative number.');
+		}
 	}
 
 	const memoized = function (this: any, ...arguments_: Parameters<FunctionToMemoize>): ReturnType<FunctionToMemoize> {
@@ -122,6 +133,18 @@ export default function mem<
 			data: result,
 			maxAge: maxAge ? Date.now() + maxAge : Number.POSITIVE_INFINITY,
 		});
+
+		if (typeof maxAge === 'number' && maxAge !== Number.POSITIVE_INFINITY) {
+			const timer = setTimeout(() => {
+				cache.delete(key);
+			}, maxAge);
+
+			timer.unref?.();
+
+			const timers = cacheTimerStore.get(fn) ?? new Set<number>();
+			timers.add(timer as unknown as number);
+			cacheTimerStore.set(fn, timers);
+		}
 
 		return result;
 	} as FunctionToMemoize;
@@ -198,7 +221,7 @@ export function memDecorator<
 /**
 Clear all cached data of a memoized function.
 
-@param fn - Memoized function.
+@param fn - The memoized function.
 */
 export function memClear(fn: AnyFunction): void {
 	const cache = cacheStore.get(fn);
@@ -210,5 +233,9 @@ export function memClear(fn: AnyFunction): void {
 		throw new TypeError('The cache Map can\'t be cleared!');
 	}
 
-	cache.clear();
+	cache.clear?.();
+
+	for (const timer of cacheTimerStore.get(fn) ?? []) {
+		clearTimeout(timer);
+	}
 }

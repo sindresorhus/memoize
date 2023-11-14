@@ -4,8 +4,8 @@ import serializeJavascript from 'serialize-javascript';
 import mem, {memDecorator, memClear} from './index.js';
 
 test('memoize', t => {
-	let i = 0;
-	const fixture = (a?: unknown, b?: unknown) => i++;
+	let index = 0;
+	const fixture = (a?: unknown, b?: unknown) => index++;
 	const memoized = mem(fixture);
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
@@ -28,13 +28,13 @@ test('memoize', t => {
 	t.is(memoized(true), 5);
 
 	// Ensure that functions are stored by reference and not by "value" (e.g. their `.toString()` representation)
-	t.is(memoized(() => i++), 6);
-	t.is(memoized(() => i++), 7);
+	t.is(memoized(() => index++), 6);
+	t.is(memoized(() => index++), 7);
 });
 
 test('cacheKey option', t => {
-	let i = 0;
-	const fixture = (..._arguments: any) => i++;
+	let index = 0;
+	const fixture = (..._arguments: any) => index++;
 	const memoized = mem(fixture, {cacheKey: ([firstArgument]) => String(firstArgument)});
 	t.is(memoized(1), 0);
 	t.is(memoized(1), 0);
@@ -44,8 +44,8 @@ test('cacheKey option', t => {
 });
 
 test('memoize with multiple non-primitive arguments', t => {
-	let i = 0;
-	const memoized = mem((a?: unknown, b?: unknown, c?: unknown) => i++, {cacheKey: JSON.stringify});
+	let index = 0;
+	const memoized = mem((a?: unknown, b?: unknown, c?: unknown) => index++, {cacheKey: JSON.stringify});
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
 	t.is(memoized({foo: true}, {bar: false}), 1);
@@ -55,8 +55,8 @@ test('memoize with multiple non-primitive arguments', t => {
 });
 
 test('memoize with regexp arguments', t => {
-	let i = 0;
-	const memoized = mem((a?: unknown) => i++, {cacheKey: serializeJavascript});
+	let index = 0;
+	const memoized = mem((a?: unknown) => index++, {cacheKey: serializeJavascript});
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
 	t.is(memoized(/Sindre Sorhus/), 1);
@@ -66,10 +66,10 @@ test('memoize with regexp arguments', t => {
 });
 
 test('memoize with Symbol arguments', t => {
-	let i = 0;
+	let index = 0;
 	const argument1 = Symbol('fixture1');
 	const argument2 = Symbol('fixture2');
-	const memoized = mem((a?: unknown) => i++);
+	const memoized = mem((a?: unknown) => index++);
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
 	t.is(memoized(argument1), 1);
@@ -79,8 +79,8 @@ test('memoize with Symbol arguments', t => {
 });
 
 test('maxAge option', async t => {
-	let i = 0;
-	const fixture = (a?: unknown) => i++;
+	let index = 0;
+	const fixture = (a?: unknown) => index++;
 	const memoized = mem(fixture, {maxAge: 100});
 	t.is(memoized(1), 0);
 	t.is(memoized(1), 0);
@@ -91,8 +91,8 @@ test('maxAge option', async t => {
 });
 
 test('maxAge option deletes old items', async t => {
-	let i = 0;
-	const fixture = (a?: unknown) => i++;
+	let index = 0;
+	const fixture = (a?: unknown) => index++;
 	const cache = new Map<number, number>();
 	const deleted: number[] = [];
 	const _delete = cache.delete.bind(cache);
@@ -115,13 +115,13 @@ test('maxAge option deletes old items', async t => {
 });
 
 test('maxAge items are deleted even if function throws', async t => {
-	let i = 0;
+	let index = 0;
 	const fixture = (a?: unknown) => {
-		if (i === 1) {
+		if (index === 1) {
 			throw new Error('failure');
 		}
 
-		return i++;
+		return index++;
 	};
 
 	const cache = new Map();
@@ -139,8 +139,8 @@ test('maxAge items are deleted even if function throws', async t => {
 });
 
 test('cache option', t => {
-	let i = 0;
-	const fixture = (..._arguments: any) => i++;
+	let index = 0;
+	const fixture = (..._arguments: any) => index++;
 	const memoized = mem(fixture, {
 		cache: new WeakMap(),
 		cacheKey: <ReturnValue>([firstArgument]: [ReturnValue]): ReturnValue => firstArgument,
@@ -154,8 +154,8 @@ test('cache option', t => {
 });
 
 test('promise support', async t => {
-	let i = 0;
-	const memoized = mem(async (a?: unknown) => i++);
+	let index = 0;
+	const memoized = mem(async (a?: unknown) => index++);
 	t.is(await memoized(), 0);
 	t.is(await memoized(), 0);
 	t.is(await memoized(10), 1);
@@ -166,8 +166,8 @@ test('preserves the original function name', t => {
 });
 
 test('.clear()', t => {
-	let i = 0;
-	const fixture = () => i++;
+	let index = 0;
+	const fixture = () => index++;
 	const memoized = mem(fixture);
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
@@ -239,4 +239,103 @@ test('memClear() throws when called on an unclearable cache', t => {
 		message: 'The cache Map can\'t be cleared!',
 		instanceOf: TypeError,
 	});
+});
+
+test('maxAge - cache item expires after specified duration', async t => {
+	let index = 0;
+	const fixture = () => index++;
+	const memoized = mem(fixture, {maxAge: 100});
+
+	t.is(memoized(), 0); // Initial call, cached
+	t.is(memoized(), 0); // Subsequent call, still cached
+	await delay(150); // Wait for longer than maxAge
+	t.is(memoized(), 1); // Cache expired, should compute again
+});
+
+test('maxAge - cache expiration timing is accurate', async t => {
+	let index = 0;
+	const fixture = () => index++;
+	const memoized = mem(fixture, {maxAge: 100});
+
+	t.is(memoized(), 0);
+	await delay(90); // Wait for slightly less than maxAge
+	t.is(memoized(), 0); // Should still be cached
+	await delay(20); // Total delay now exceeds maxAge
+	t.is(memoized(), 1); // Should recompute as cache has expired
+});
+
+test('maxAge - expired items are not present in cache', async t => {
+	let index = 0;
+	const fixture = () => index++;
+	const cache = new Map();
+	const memoized = mem(fixture, {maxAge: 100, cache});
+
+	memoized(); // Call to cache the result
+	await delay(150); // Wait for cache to expire
+	memoized(); // Recompute and recache
+	t.is(cache.size, 1); // Only one item should be in the cache
+});
+
+test('maxAge - complex arguments and cache expiration', async t => {
+	let index = 0;
+	const fixture = object => index++;
+	const memoized = mem(fixture, {maxAge: 100, cacheKey: JSON.stringify});
+
+	const arg = {key: 'value'};
+	t.is(memoized(arg), 0);
+	await delay(150);
+	t.is(memoized(arg), 1); // Argument is the same, but should recompute due to expiration
+});
+
+test('maxAge - concurrent calls return cached value', async t => {
+	let index = 0;
+	const fixture = () => index++;
+	const memoized = mem(fixture, {maxAge: 100});
+
+	t.is(memoized(), 0);
+	await delay(50); // Delay less than maxAge
+	t.is(memoized(), 0); // Should return cached value
+});
+
+test('maxAge - different arguments have separate expirations', async t => {
+	let index = 0;
+	const fixture = x => index++;
+	const memoized = mem(fixture, {maxAge: 100});
+
+	t.is(memoized('a'), 0);
+	await delay(150); // Expire the cache for 'a'
+	t.is(memoized('b'), 1); // 'b' should be a separate cache entry
+	t.is(memoized('a'), 2); // 'a' should be recomputed
+});
+
+test('maxAge - zero maxAge means no caching', t => {
+	let index = 0;
+	const fixture = () => index++;
+	const memoized = mem(fixture, {maxAge: 0});
+
+	t.is(memoized(), 0);
+	t.is(memoized(), 1); // No caching, should increment
+});
+
+test('maxAge - immediate expiration', async t => {
+	let index = 0;
+	const fixture = () => index++;
+	const memoized = mem(fixture, {maxAge: 1});
+	t.is(memoized(), 0);
+	await delay(10);
+	t.is(memoized(), 1); // Cache should expire immediately
+});
+
+test('maxAge - high concurrency', async t => {
+	let index = 0;
+	const fixture = () => index++;
+	const memoized = mem(fixture, {maxAge: 50});
+
+	// Simulate concurrent calls
+	for (let job = 0; job < 10_000; job++) {
+		memoized();
+	}
+
+	await delay(100);
+	t.is(memoized(), 1);
 });
