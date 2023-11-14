@@ -1,7 +1,7 @@
-import mimicFn from 'mimic-fn';
+import mimicFunction from 'mimic-function';
 import mapAgeCleaner from 'map-age-cleaner';
 
-type AnyFunction = (...arguments_: any) => any;
+type AnyFunction = (...arguments_: readonly any[]) => any;
 
 const cacheStore = new WeakMap<AnyFunction, CacheStorage<any, any>>();
 
@@ -68,7 +68,7 @@ export type Options<
 /**
 [Memoize](https://en.wikipedia.org/wiki/Memoization) functions - An optimization used to speed up consecutive function calls by caching the result of calls with identical input.
 
-@param fn - Function to be memoized.
+@param fn - The function to be memoized.
 
 @example
 ```
@@ -113,7 +113,7 @@ export default function mem<
 
 		const cacheItem = cache.get(key);
 		if (cacheItem) {
-			return cacheItem.data; // eslint-disable-line @typescript-eslint/no-unsafe-return
+			return cacheItem.data;
 		}
 
 		const result = fn.apply(this, arguments_) as ReturnType<FunctionToMemoize>;
@@ -123,10 +123,10 @@ export default function mem<
 			maxAge: maxAge ? Date.now() + maxAge : Number.POSITIVE_INFINITY,
 		});
 
-		return result; // eslint-disable-line @typescript-eslint/no-unsafe-return
+		return result;
 	} as FunctionToMemoize;
 
-	mimicFn(memoized, fn, {
+	mimicFunction(memoized, fn, {
 		ignoreNonConfigurable: true,
 	});
 

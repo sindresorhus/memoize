@@ -11,16 +11,19 @@
 		"url": "https://sindresorhus.com"
 	},
 	"type": "module",
-	"exports": "./dist/index.js",
+	"exports": {
+		"types": "./dist/index.d.ts",
+		"default": "./dist/index.js"
+	},
+	"sideEffects": false,
 	"engines": {
-		"node": ">=16"
+		"node": ">=18"
 	},
 	"scripts": {
-		"test": "xo && ava && npm run build && tsd",
+		"test": "xo && ava && npm run build && tsd --typings dist/index.d.ts",
 		"build": "del-cli dist && tsc",
 		"prepack": "npm run build"
 	},
-	"types": "dist/index.d.ts",
 	"files": [
 		"dist"
 	],
@@ -39,19 +42,18 @@
 	],
 	"dependencies": {
 		"map-age-cleaner": "^0.2.0",
-		"mimic-fn": "^4.0.0"
+		"mimic-function": "^5.0.0"
 	},
 	"devDependencies": {
-		"@sindresorhus/tsconfig": "^3.0.1",
-		"@types/serialize-javascript": "^5.0.2",
-		"ava": "^5.2.0",
-		"del-cli": "^5.0.0",
-		"delay": "^5.0.0",
+		"@sindresorhus/tsconfig": "^5.0.0",
+		"@types/serialize-javascript": "^5.0.4",
+		"ava": "^5.3.1",
+		"del-cli": "^5.1.0",
+		"delay": "^6.0.0",
 		"serialize-javascript": "^6.0.1",
 		"ts-node": "^10.9.1",
-		"tsd": "^0.28.1",
-		"typescript": "^5.0.4",
-		"xo": "^0.54.2"
+		"tsd": "^0.29.0",
+		"xo": "^0.56.0"
 	},
 	"ava": {
 		"timeout": "1m",
@@ -64,9 +66,7 @@
 	},
 	"xo": {
 		"rules": {
-			"@typescript-eslint/member-ordering": "off",
-			"@typescript-eslint/no-var-requires": "off",
-			"@typescript-eslint/no-empty-function": "off"
+			"@typescript-eslint/no-unsafe-return": "off"
 		}
 	}
 }

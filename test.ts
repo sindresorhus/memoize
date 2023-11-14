@@ -162,7 +162,7 @@ test('promise support', async t => {
 });
 
 test('preserves the original function name', t => {
-	t.is(mem(function foo() {}).name, 'foo'); // eslint-disable-line func-names
+	t.is(mem(function foo() {}).name, 'foo'); // eslint-disable-line func-names, @typescript-eslint/no-empty-function
 });
 
 test('.clear()', t => {
@@ -220,7 +220,7 @@ test('.decorator()', t => {
 
 test('memClear() throws when called with a plain function', t => {
 	t.throws(() => {
-		memClear(() => {});
+		memClear(() => {}); // eslint-disable-line @typescript-eslint/no-empty-function
 	}, {
 		message: 'Can\'t clear a function that was not memoized!',
 		instanceOf: TypeError,

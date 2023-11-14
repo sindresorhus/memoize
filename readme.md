@@ -12,8 +12,8 @@ If you want to memoize Promise-returning functions (like `async` functions), you
 
 ## Install
 
-```
-$ npm install mem
+```sh
+npm install mem
 ```
 
 ## Usage
@@ -164,7 +164,7 @@ Better yet, if your function’s arguments are compatible with `WeakMap`, you sh
 
 Type: `Function`
 
-Function to be memoized.
+The function to be memoized.
 
 #### options
 
@@ -273,15 +273,3 @@ console.log(cache.stats);
 ## Related
 
 - [p-memoize](https://github.com/sindresorhus/p-memoize) - Memoize promise-returning & async functions
-
----
-
-<div align="center">
-	<b>
-		<a href="https://tidelift.com/subscription/pkg/npm-mem?utm_source=npm-mem&utm_medium=referral&utm_campaign=readme">Get professional support for this package with a Tidelift subscription</a>
-	</b>
-	<br>
-	<sub>
-		Tidelift helps make open source sustainable for maintainers while giving companies<br>assurances about security, maintenance, and licensing for their dependencies.
-	</sub>
-</div>
