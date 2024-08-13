@@ -2,35 +2,35 @@ import {expectType} from 'tsd';
 import memoize, {memoizeClear} from '../index.js';
 
 // eslint-disable-next-line unicorn/prefer-native-coercion-functions -- Required `string` type
-const fn = (text: string) => Boolean(text);
+const function_ = (text: string) => Boolean(text);
 
-expectType<typeof fn>(memoize(fn));
-expectType<typeof fn>(memoize(fn, {maxAge: 1}));
-expectType<typeof fn>(memoize(fn, {cacheKey: ([firstArgument]: [string]) => firstArgument}));
-expectType<typeof fn>(
-	memoize(fn, {
+expectType<typeof function_>(memoize(function_));
+expectType<typeof function_>(memoize(function_, {maxAge: 1}));
+expectType<typeof function_>(memoize(function_, {cacheKey: ([firstArgument]: [string]) => firstArgument}));
+expectType<typeof function_>(
+	memoize(function_, {
 		// The cacheKey returns an array. This isn't deduplicated by a regular Map, but it's valid. The correct solution would be to use ManyKeysMap to deduplicate it correctly
 		cacheKey: (arguments_: [string]) => arguments_,
 		cache: new Map<[string], {data: boolean; maxAge: number}>(),
 	}),
 );
-expectType<typeof fn>(
+expectType<typeof function_>(
 	// The `firstArgument` of `fn` is of type `string`, so it's used
-	memoize(fn, {cache: new Map<string, {data: boolean; maxAge: number}>()}),
+	memoize(function_, {cache: new Map<string, {data: boolean; maxAge: number}>()}),
 );
 
 /* Overloaded function tests */
-function overloadedFn(parameter: false): false;
-function overloadedFn(parameter: true): true;
-function overloadedFn(parameter: boolean): boolean {
+function overloadedFunction(parameter: false): false;
+function overloadedFunction(parameter: true): true;
+function overloadedFunction(parameter: boolean): boolean {
 	return parameter;
 }
 
-expectType<typeof overloadedFn>(memoize(overloadedFn));
-expectType<true>(memoize(overloadedFn)(true));
-expectType<false>(memoize(overloadedFn)(false));
+expectType<typeof overloadedFunction>(memoize(overloadedFunction));
+expectType<true>(memoize(overloadedFunction)(true));
+expectType<false>(memoize(overloadedFunction)(false));
 
-memoizeClear(fn);
+memoizeClear(function_);
 
 // `cacheKey` tests.
 // The argument should match the memoized function’s parameters

@@ -97,7 +97,7 @@ export default function memoize<
 	FunctionToMemoize extends AnyFunction,
 	CacheKeyType,
 >(
-	fn: FunctionToMemoize,
+	function_: FunctionToMemoize,
 	{
 		cacheKey,
 		cache = new Map(),
@@ -105,7 +105,7 @@ export default function memoize<
 	}: Options<FunctionToMemoize, CacheKeyType> = {},
 ): FunctionToMemoize {
 	if (maxAge === 0) {
-		return fn;
+		return function_;
 	}
 
 	if (typeof maxAge === 'number') {
@@ -127,7 +127,7 @@ export default function memoize<
 			return cacheItem.data;
 		}
 
-		const result = fn.apply(this, arguments_) as ReturnType<FunctionToMemoize>;
+		const result = function_.apply(this, arguments_) as ReturnType<FunctionToMemoize>;
 
 		cache.set(key, {
 			data: result,
@@ -141,15 +141,15 @@ export default function memoize<
 
 			timer.unref?.();
 
-			const timers = cacheTimerStore.get(fn) ?? new Set<number>();
+			const timers = cacheTimerStore.get(function_) ?? new Set<number>();
 			timers.add(timer as unknown as number);
-			cacheTimerStore.set(fn, timers);
+			cacheTimerStore.set(function_, timers);
 		}
 
 		return result;
 	} as FunctionToMemoize;
 
-	mimicFunction(memoized, fn, {
+	mimicFunction(memoized, function_, {
 		ignoreNonConfigurable: true,
 	});
 
@@ -223,8 +223,8 @@ Clear all cached data of a memoized function.
 
 @param fn - The memoized function.
 */
-export function memoizeClear(fn: AnyFunction): void {
-	const cache = cacheStore.get(fn);
+export function memoizeClear(function_: AnyFunction): void {
+	const cache = cacheStore.get(function_);
 	if (!cache) {
 		throw new TypeError('Can\'t clear a function that was not memoized!');
 	}
@@ -235,7 +235,7 @@ export function memoizeClear(fn: AnyFunction): void {
 
 	cache.clear();
 
-	for (const timer of cacheTimerStore.get(fn) ?? []) {
+	for (const timer of cacheTimerStore.get(function_) ?? []) {
 		clearTimeout(timer);
 	}
 }

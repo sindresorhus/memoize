@@ -1,7 +1,6 @@
 {
 	"extends": "@sindresorhus/tsconfig",
 	"compilerOptions": {
-		"outDir": "dist",
 		"experimentalDecorators": true
 	},
 	"files": [

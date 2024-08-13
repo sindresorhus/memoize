@@ -193,7 +193,7 @@ test('prototype support', t => {
 	t.is(unicorn.foo(), 0);
 });
 
-test('.decorator()', t => {
+test('memoizeDecorator()', t => {
 	let returnValue = 1;
 	const returnValue2 = 101;
 
@@ -218,7 +218,7 @@ test('.decorator()', t => {
 	t.is(beta.counter(), 2, 'The method should not be memoized across instances');
 });
 
-test('memClear() throws when called with a plain function', t => {
+test('memoizeClear() throws when called with a plain function', t => {
 	t.throws(() => {
 		memoizeClear(() => {}); // eslint-disable-line @typescript-eslint/no-empty-function
 	}, {
@@ -227,7 +227,7 @@ test('memClear() throws when called with a plain function', t => {
 	});
 });
 
-test('memClear() throws when called on an unclearable cache', t => {
+test('memoizeClear() throws when called on an unclearable cache', t => {
 	const fixture = () => 1;
 	const memoized = memoize(fixture, {
 		cache: new WeakMap(),
@@ -281,10 +281,10 @@ test('maxAge - complex arguments and cache expiration', async t => {
 	const fixture = object => index++;
 	const memoized = memoize(fixture, {maxAge: 100, cacheKey: JSON.stringify});
 
-	const arg = {key: 'value'};
-	t.is(memoized(arg), 0);
+	const argument = {key: 'value'};
+	t.is(memoized(argument), 0);
 	await delay(150);
-	t.is(memoized(arg), 1); // Argument is the same, but should recompute due to expiration
+	t.is(memoized(argument), 1); // Argument is the same, but should recompute due to expiration
 });
 
 test('maxAge - concurrent calls return cached value', async t => {
