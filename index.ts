@@ -18,7 +18,10 @@ type CacheStorage<KeyType, ValueType> = {
 	clear?: () => void;
 };
 
-export type Options<FunctionToMemoize extends AnyFunction, CacheKeyType> = {
+export type Options<
+	FunctionToMemoize extends AnyFunction,
+	CacheKeyType,
+> = {
 	/**
 	Milliseconds until the cache entry expires.
 
@@ -199,51 +202,90 @@ export function memoizeDecorator<
 	FunctionToMemoize extends AnyFunction,
 	CacheKeyType,
 >(options: Options<FunctionToMemoize, CacheKeyType> = {}): MethodDecorator {
+	const memoizedMethodsMap = new WeakMap<any, AnyFunction>();
+	const memoizedValuesMap = new WeakMap<any, unknown>();
+
 	return (
-		// @ts-expect-error 'target' is declared but its value is never read.
-		target: any,
-		propertyKey: string | symbol,
+		_target: any,
+		_propertyKey: string | symbol,
 		descriptor: PropertyDescriptor,
 	): void => {
-		const isGetter = Boolean(descriptor.get);
+		const originalIsGetter = typeof descriptor.get === 'function';
+		const originalIsValue = descriptor.value !== undefined;
+
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-		const originalMethod = descriptor.value || descriptor.get;
+		const originalMethod = descriptor.value ?? descriptor.get;
 
 		if (typeof originalMethod !== 'function') {
 			throw new TypeError('The decorated value must be a function or a getter');
 		}
 
-		if (!isGetter) {
-			const memoizedKey = Symbol(`__memoized_${String(propertyKey)}`);
-			descriptor.value = function (this: any, ...arguments_: any[]) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-				this[memoizedKey] ||= memoize(originalMethod.bind(this), options);
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-				return this[memoizedKey](...arguments_);
+		if (originalIsGetter) {
+			// This was originally a getter. We must not specify `value` or `writable`.
+			delete descriptor.value;
+			delete descriptor.writable;
+
+			descriptor.get = function (this: any): unknown {
+				if (memoizedValuesMap.has(this)) {
+					return memoizedValuesMap.get(this);
+				}
+
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+				const value = originalMethod.call(this);
+
+				memoizedValuesMap.set(this, value);
+				return value;
 			};
+		} else if (originalIsValue) {
+			delete descriptor.get;
+			delete descriptor.set;
 
-			return;
+			descriptor.value = function (this: any, ...arguments_: any[]) {
+				let memoizedFunction = memoizedMethodsMap.get(this);
+				if (memoizedFunction !== undefined) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+					return memoizedFunction(...arguments_);
+				}
+
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+				memoizedFunction = memoize(originalMethod.bind(this), options);
+
+				if (memoizedFunction === undefined) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+					return originalMethod.call(this, ...arguments_);
+				}
+
+				memoizedMethodsMap.set(this, memoizedFunction);
+
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+				return memoizedFunction(...arguments_);
+			};
+		} else {
+			// In case there's a scenario with no get/value, handle gracefully by defining a value property.
+			delete descriptor.get;
+			delete descriptor.set;
+
+			descriptor.value = function (this: any, ...arguments_: any[]) {
+				let memoizedFunction = memoizedMethodsMap.get(this);
+				if (memoizedFunction !== undefined) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+					return memoizedFunction(...arguments_);
+				}
+
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+				memoizedFunction = memoize(originalMethod.bind(this), options);
+
+				if (memoizedFunction === undefined) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+					return originalMethod.call(this, ...arguments_);
+				}
+
+				memoizedMethodsMap.set(this, memoizedFunction);
+
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+				return memoizedFunction(...arguments_);
+			};
 		}
-
-		const memoizedKey = Symbol(`__memoized_${String(propertyKey)}`);
-
-		descriptor.get = function (this: Record<symbol, unknown>): unknown {
-			if (Object.hasOwn(this, memoizedKey)) {
-				return this[memoizedKey];
-			}
-
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
-			const value = originalMethod.call(this);
-
-			Object.defineProperty(this, memoizedKey, {
-				configurable: false,
-				enumerable: false,
-				writable: false,
-				value,
-			});
-
-			return value;
-		};
 	};
 }
 
@@ -255,13 +297,11 @@ Clear all cached data of a memoized function.
 export function memoizeClear(function_: AnyFunction): void {
 	const cache = cacheStore.get(function_);
 	if (!cache) {
-		// eslint-disable-next-line @typescript-eslint/quotes
-		throw new TypeError("Can't clear a function that was not memoized!");
+		throw new TypeError('Can\'t clear a function that was not memoized!');
 	}
 
 	if (typeof cache.clear !== 'function') {
-		// eslint-disable-next-line @typescript-eslint/quotes
-		throw new TypeError("The cache Map can't be cleared!");
+		throw new TypeError('The cache Map can\'t be cleared!');
 	}
 
 	cache.clear();
