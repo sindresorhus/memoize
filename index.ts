@@ -25,6 +25,8 @@ export type Options<
 	/**
 	Milliseconds until the cache entry expires.
 
+	If a function is provided, it receives the arguments and must return the max age.
+
 	@default Infinity
 	*/
 	readonly maxAge?: number | ((...arguments_: Parameters<FunctionToMemoize>) => number);
