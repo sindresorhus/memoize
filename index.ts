@@ -69,7 +69,6 @@ export type Options<
 [Memoize](https://en.wikipedia.org/wiki/Memoization) functions - An optimization used to speed up consecutive function calls by caching the result of calls with identical input.
 
 @param function_ - The function to be memoized.
-@param options - Options for the memoization.
 
 @example
 ```
