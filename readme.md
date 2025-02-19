@@ -183,10 +183,13 @@ Type: `object`
 
 ##### maxAge
 
-Type: `number`\
-Default: `Infinity`
+Type: `number` | `Function`\
+Default: `Infinity`\
+Example: `arguments_ => arguments_ < new Date() ? Infinity : 60_000`
 
 Milliseconds until the cache entry expires.
+
+If a function is provided, it receives the arguments and must return the max age.
 
 ##### cacheKey
 

@@ -339,3 +339,21 @@ test('maxAge - high concurrency', async t => {
 	await delay(100);
 	t.is(memoized(), 1);
 });
+
+test('maxAge dependent on function parameters', async t => {
+	let index = 0;
+	const fixture = (x: number) => index++;
+	const memoized = memoize(fixture, {
+		maxAge: x => x * 100,
+	});
+
+	t.is(memoized(1), 0); // Initial call, cached
+	await delay(50);
+	t.is(memoized(1), 0); // Still cached
+	await delay(60);
+	t.is(memoized(1), 1); // Cache expired, should compute again
+
+	t.is(memoized(2), 2); // Initial call with different parameter, cached
+	await delay(210);
+	t.is(memoized(2), 3); // Cache expired, should compute again
+});

@@ -25,9 +25,11 @@ export type Options<
 	/**
 	Milliseconds until the cache entry expires.
 
+	If a function is provided, it receives the arguments and must return the max age.
+
 	@default Infinity
 	*/
-	readonly maxAge?: number;
+	readonly maxAge?: number | ((...arguments_: Parameters<FunctionToMemoize>) => number);
 
 	/**
 	Determines the cache key for storing the result based on the function arguments. By default, __only the first argument is considered__ and it only works with [primitives](https://developer.mozilla.org/en-US/docs/Glossary/Primitive).
@@ -68,7 +70,7 @@ export type Options<
 /**
 [Memoize](https://en.wikipedia.org/wiki/Memoization) functions - An optimization used to speed up consecutive function calls by caching the result of calls with identical input.
 
-@param fn - The function to be memoized.
+@param function_ - The function to be memoized.
 
 @example
 ```
@@ -129,15 +131,17 @@ export default function memoize<
 
 		const result = function_.apply(this, arguments_) as ReturnType<FunctionToMemoize>;
 
+		const computedMaxAge = typeof maxAge === 'function' ? maxAge(...arguments_) : maxAge;
+
 		cache.set(key, {
 			data: result,
-			maxAge: maxAge ? Date.now() + maxAge : Number.POSITIVE_INFINITY,
+			maxAge: computedMaxAge ? Date.now() + computedMaxAge : Number.POSITIVE_INFINITY,
 		});
 
-		if (typeof maxAge === 'number' && maxAge !== Number.POSITIVE_INFINITY) {
+		if (computedMaxAge && computedMaxAge > 0 && computedMaxAge !== Number.POSITIVE_INFINITY) {
 			const timer = setTimeout(() => {
 				cache.delete(key);
-			}, maxAge);
+			}, computedMaxAge);
 
 			timer.unref?.();
 
@@ -221,7 +225,7 @@ export function memoizeDecorator<
 /**
 Clear all cached data of a memoized function.
 
-@param fn - The memoized function.
+@param function_ - The memoized function.
 */
 export function memoizeClear(function_: AnyFunction): void {
 	const cache = cacheStore.get(function_);
