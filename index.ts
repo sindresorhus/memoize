@@ -1,20 +1,23 @@
 import mimicFunction from 'mimic-function';
 
 type AnyFunction = (...arguments_: readonly any[]) => unknown;
+type Timer = ReturnType<typeof setTimeout>;
 
-const cacheStore = new WeakMap<AnyFunction, CacheStorage<any, any>>();
-const cacheTimerStore = new WeakMap<AnyFunction, Set<number>>();
+const maxTimeoutValue = 2_147_483_647;
+
+const cacheStore = new WeakMap<AnyFunction, CacheLike<unknown, unknown>>();
+const cacheTimerStore = new WeakMap<AnyFunction, Set<Timer>>();
 const cacheKeyStore = new WeakMap<AnyFunction, (arguments_: readonly any[]) => unknown>();
 
-type CacheStorageContent<ValueType> = {
+type CacheItem<ValueType> = {
 	data: ValueType;
 	maxAge: number;
 };
 
-type CacheStorage<KeyType, ValueType> = {
+type CacheLike<KeyType, ValueType> = {
 	has: (key: KeyType) => boolean;
-	get: (key: KeyType) => CacheStorageContent<ValueType> | undefined;
-	set: (key: KeyType, value: CacheStorageContent<ValueType>) => void;
+	get: (key: KeyType) => CacheItem<ValueType> | undefined;
+	set: (key: KeyType, value: CacheItem<ValueType>) => void;
 	delete: (key: KeyType) => void;
 	clear?: () => void;
 };
@@ -27,6 +30,10 @@ export type Options<
 	Milliseconds until the cache entry expires.
 
 	If a function is provided, it receives the arguments and must return the max age.
+
+	- `0` or negative values: Do not cache the result
+	- `Infinity`: Cache indefinitely (no expiration)
+	- Positive finite number: Cache for the specified milliseconds
 
 	@default Infinity
 	*/
@@ -65,8 +72,25 @@ export type Options<
 	@default new Map()
 	@example new WeakMap()
 	*/
-	readonly cache?: CacheStorage<CacheKeyType, ReturnType<FunctionToMemoize>>;
+	readonly cache?: CacheLike<CacheKeyType, ReturnType<FunctionToMemoize>>;
 };
+
+function getValidCacheItem<KeyType, ValueType>(
+	cache: CacheLike<KeyType, ValueType>,
+	key: KeyType,
+): CacheItem<ValueType> | undefined {
+	const item = cache.get(key);
+	if (!item) {
+		return undefined;
+	}
+
+	if (item.maxAge <= Date.now()) {
+		cache.delete(key);
+		return undefined;
+	}
+
+	return item;
+}
 
 /**
 [Memoize](https://en.wikipedia.org/wiki/Memoization) functions - An optimization used to speed up consecutive function calls by caching the result of calls with identical input.
@@ -111,10 +135,9 @@ export default function memoize<
 		return function_;
 	}
 
-	if (typeof maxAge === 'number') {
-		const maxSetIntervalValue = 2_147_483_647;
-		if (maxAge > maxSetIntervalValue) {
-			throw new TypeError(`The \`maxAge\` option cannot exceed ${maxSetIntervalValue}.`);
+	if (typeof maxAge === 'number' && Number.isFinite(maxAge)) {
+		if (maxAge > maxTimeoutValue) {
+			throw new TypeError(`The \`maxAge\` option cannot exceed ${maxTimeoutValue}.`);
 		}
 
 		if (maxAge < 0) {
@@ -125,7 +148,7 @@ export default function memoize<
 	const memoized = function (this: any, ...arguments_: Parameters<FunctionToMemoize>): ReturnType<FunctionToMemoize> {
 		const key = cacheKey ? cacheKey(arguments_) : arguments_[0] as CacheKeyType;
 
-		const cacheItem = cache.get(key);
+		const cacheItem = getValidCacheItem(cache, key);
 		if (cacheItem) {
 			return cacheItem.data;
 		}
@@ -133,23 +156,39 @@ export default function memoize<
 		const result = function_.apply(this, arguments_) as ReturnType<FunctionToMemoize>;
 
 		const computedMaxAge = typeof maxAge === 'function' ? maxAge(...arguments_) : maxAge;
+		if (computedMaxAge !== undefined && computedMaxAge !== Number.POSITIVE_INFINITY) {
+			if (!Number.isFinite(computedMaxAge)) {
+				throw new TypeError('The `maxAge` function must return a finite number, `0`, or `Infinity`.');
+			}
+
+			if (computedMaxAge <= 0) {
+				return result; // Do not cache
+			}
+
+			if (computedMaxAge > maxTimeoutValue) {
+				throw new TypeError(`The \`maxAge\` function result cannot exceed ${maxTimeoutValue}.`);
+			}
+		}
 
 		cache.set(key, {
 			data: result,
-			maxAge: computedMaxAge ? Date.now() + computedMaxAge : Number.POSITIVE_INFINITY,
+			maxAge: (computedMaxAge === undefined || computedMaxAge === Number.POSITIVE_INFINITY)
+				? Number.POSITIVE_INFINITY
+				: Date.now() + computedMaxAge,
 		});
 
-		if (computedMaxAge && computedMaxAge > 0 && computedMaxAge !== Number.POSITIVE_INFINITY) {
+		if (computedMaxAge !== undefined && computedMaxAge !== Number.POSITIVE_INFINITY) {
 			const timer = setTimeout(() => {
 				cache.delete(key);
-				cacheTimerStore.get(function_)?.delete(timer as unknown as number);
+				cacheTimerStore.get(memoized)?.delete(timer);
 			}, computedMaxAge);
 
-			timer.unref?.();
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+			(timer as any).unref?.();
 
-			const timers = cacheTimerStore.get(function_) ?? new Set<number>();
-			timers.add(timer as unknown as number);
-			cacheTimerStore.set(function_, timers);
+			const timers = cacheTimerStore.get(memoized) ?? new Set<Timer>();
+			timers.add(timer);
+			cacheTimerStore.set(memoized, timers);
 		}
 
 		return result;
@@ -159,7 +198,7 @@ export default function memoize<
 		ignoreNonConfigurable: true,
 	});
 
-	cacheStore.set(memoized, cache);
+	cacheStore.set(memoized, cache as CacheLike<unknown, unknown>);
 	cacheKeyStore.set(memoized, (cacheKey ?? ((arguments_: readonly any[]) => arguments_[0])) as (arguments_: readonly any[]) => unknown);
 
 	return memoized;
@@ -245,6 +284,8 @@ export function memoizeClear(function_: AnyFunction): void {
 	for (const timer of cacheTimerStore.get(function_) ?? []) {
 		clearTimeout(timer);
 	}
+
+	cacheTimerStore.delete(function_);
 }
 
 /**
@@ -252,7 +293,9 @@ Check if a specific set of arguments is cached for a memoized function.
 
 @param function_ - The memoized function.
 @param arguments_ - The arguments to check.
-@returns `true` if the arguments are cached, `false` otherwise.
+@returns `true` if the arguments are cached and not expired, `false` otherwise.
+
+Uses the same argument processing as the memoized function, including any custom `cacheKey` function.
 
 @example
 ```
@@ -280,5 +323,6 @@ export function memoizeIsCached<FunctionToMemoize extends AnyFunction>(
 	const cache = cacheStore.get(function_)!;
 
 	const key = cacheKey(arguments_);
-	return cache.has(key);
+	const item = getValidCacheItem(cache, key);
+	return item !== undefined;
 }
