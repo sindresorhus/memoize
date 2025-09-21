@@ -191,6 +191,10 @@ Milliseconds until the cache entry expires.
 
 If a function is provided, it receives the arguments and must return the max age.
 
+- `0` or negative values: Do not cache the result
+- `Infinity`: Cache indefinitely (no expiration)
+- Positive finite number: Cache for the specified milliseconds
+
 ##### cacheKey
 
 Type: `Function`\
@@ -262,9 +266,9 @@ The memoized function.
 
 ### memoizeIsCached(fn, ...arguments)
 
-Check if a call with specific arguments is already cached.
+Check if a specific set of arguments is cached for a memoized function.
 
-Returns `true` if the result is cached, `false` otherwise.
+Returns `true` if the arguments are cached and not expired, `false` otherwise.
 
 Uses the same argument processing as the memoized function, including any custom `cacheKey` function.
 

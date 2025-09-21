@@ -431,3 +431,128 @@ test('maxAge dependent on function parameters', async t => {
 	await delay(210);
 	t.is(memoized(2), 3); // Cache expired, should compute again
 });
+
+test('maxAge function returning 0 disables caching', t => {
+	let index = 0;
+	const fixture = (value?: unknown) => index++;
+	const memoized = memoize(fixture, {
+		maxAge() {
+			return 0;
+		},
+	});
+	t.is(memoized('a'), 0);
+	t.is(memoized('a'), 1);
+	t.false(memoizeIsCached(memoized, 'a'));
+});
+
+test('memoizeIsCached respects expiration and cleans stale entries', async t => {
+	let index = 0;
+	const fixture = (value?: unknown) => index++;
+	const memoized = memoize(fixture, {maxAge: 50});
+	t.is(memoized('x'), 0);
+	t.true(memoizeIsCached(memoized, 'x'));
+	await delay(70);
+	t.false(memoizeIsCached(memoized, 'x'));
+});
+
+test('memoizeClear clears timers', async t => {
+	let index = 0;
+	const fixture = (value?: unknown) => index++;
+	const memoized = memoize(fixture, {maxAge: 5000});
+	t.is(memoized('y'), 0);
+	memoizeClear(memoized);
+	await delay(10);
+	t.is(memoized('y'), 1);
+});
+
+test('allows Infinity as a maxAge number', t => {
+	let index = 0;
+	const fixture = (value?: unknown) => index++;
+	const memoized = memoize(fixture, {maxAge: Number.POSITIVE_INFINITY});
+	t.is(memoized('z'), 0);
+	t.true(memoizeIsCached(memoized, 'z'));
+});
+
+test('maxAge function returning Infinity caches indefinitely', t => {
+	let index = 0;
+	const fixture = (value?: unknown) => index++;
+	const memoized = memoize(fixture, {
+		maxAge() {
+			return Number.POSITIVE_INFINITY;
+		},
+	});
+	t.is(memoized('a'), 0);
+	t.is(memoized('a'), 0);
+	t.true(memoizeIsCached(memoized, 'a'));
+});
+
+test('maxAge function returning negative number disables caching', t => {
+	let index = 0;
+	const fixture = (value?: unknown) => index++;
+	const memoized = memoize(fixture, {
+		maxAge() {
+			return -100;
+		},
+	});
+	t.is(memoized('a'), 0);
+	t.is(memoized('a'), 1);
+	t.false(memoizeIsCached(memoized, 'a'));
+});
+
+test('maxAge function validation - throws on non-finite non-Infinity', t => {
+	const fixture = () => 42;
+	const memoized = memoize(fixture, {
+		maxAge() {
+			return Number.NaN;
+		},
+	});
+	t.throws(() => memoized(), {
+		instanceOf: TypeError,
+		message: 'The `maxAge` function must return a finite number, `0`, or `Infinity`.',
+	});
+});
+
+test('maxAge function validation - throws on excessive timeout', t => {
+	const fixture = () => 42;
+	const memoized = memoize(fixture, {
+		maxAge() {
+			return 2_147_483_648; // One more than max
+		},
+	});
+	t.throws(() => memoized(), {
+		instanceOf: TypeError,
+		message: 'The `maxAge` function result cannot exceed 2147483647.',
+	});
+});
+
+test('expired cache entries are recomputed on read', async t => {
+	let index = 0;
+	const fixture = (value?: unknown) => index++;
+	const memoized = memoize(fixture, {maxAge: 50});
+
+	// Cache an entry
+	t.is(memoized('test'), 0);
+	t.true(memoizeIsCached(memoized, 'test'));
+
+	// Wait for expiration
+	await delay(70);
+
+	// Reading expired entry should compute fresh value
+	t.is(memoized('test'), 1);
+	t.true(memoizeIsCached(memoized, 'test'));
+});
+
+test('very short maxAge expiration', async t => {
+	let index = 0;
+	const fixture = (value?: unknown) => index++;
+
+	const memoized = memoize(fixture, {maxAge: 10});
+	t.is(memoized('a'), 0);
+
+	// Should still be cached immediately
+	t.is(memoized('a'), 0);
+
+	// After expiration
+	await delay(15);
+	t.is(memoized('a'), 1);
+});
