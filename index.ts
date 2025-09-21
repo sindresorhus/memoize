@@ -271,15 +271,12 @@ export function memoizeIsCached<FunctionToMemoize extends AnyFunction>(
 	function_: FunctionToMemoize,
 	...arguments_: Parameters<FunctionToMemoize>
 ): boolean {
-	const cache = cacheStore.get(function_);
-	if (!cache) {
-		return false;
-	}
-
 	const cacheKey = cacheKeyStore.get(function_);
 	if (!cacheKey) {
 		return false;
 	}
+
+	const cache = cacheStore.get(function_)!;
 
 	const key = cacheKey(arguments_);
 	return cache.has(key);
