@@ -1,7 +1,7 @@
 import test from 'ava';
 import delay from 'delay';
 import serializeJavascript from 'serialize-javascript';
-import memoize, {memoizeDecorator, memoizeClear} from './index.js';
+import memoize, {memoizeDecorator, memoizeClear, memoizeIsCached} from './index.js';
 
 test('memoize', t => {
 	let index = 0;
@@ -306,6 +306,80 @@ test('maxAge - different arguments have separate expirations', async t => {
 	await delay(150); // Expire the cache for 'a'
 	t.is(memoized('b'), 1); // 'b' should be a separate cache entry
 	t.is(memoized('a'), 2); // 'a' should be recomputed
+});
+
+test('memoizeIsCached() checks if arguments are cached', t => {
+	let index = 0;
+	const fixture = (a?: unknown) => index++;
+	const memoized = memoize(fixture);
+
+	t.is(memoizeIsCached(memoized, 1), false);
+	memoized(1);
+	t.is(memoizeIsCached(memoized, 1), true);
+	t.is(memoizeIsCached(memoized, 2), false);
+	memoized(2);
+	t.is(memoizeIsCached(memoized, 2), true);
+	t.is(memoizeIsCached(memoized, 1), true);
+});
+
+test('memoizeIsCached() works with custom cacheKey', t => {
+	let index = 0;
+	const fixture = (a?: unknown, b?: unknown) => index++;
+	const memoized = memoize(fixture, {cacheKey: JSON.stringify});
+
+	t.is(memoizeIsCached(memoized, 1, 2), false);
+	memoized(1, 2);
+	t.is(memoizeIsCached(memoized, 1, 2), true);
+	t.is(memoizeIsCached(memoized, 1, 3), false);
+	t.is(memoizeIsCached(memoized, 2, 1), false);
+});
+
+test('memoizeIsCached() with maxAge', async t => {
+	let index = 0;
+	const fixture = (a?: unknown) => index++;
+	const memoized = memoize(fixture, {maxAge: 100});
+
+	t.is(memoizeIsCached(memoized, 1), false);
+	memoized(1);
+	t.is(memoizeIsCached(memoized, 1), true);
+	await delay(150);
+	t.is(memoizeIsCached(memoized, 1), false);
+});
+
+test('memoizeIsCached() when maxAge is 0', t => {
+	let index = 0;
+	const fixture = (a?: unknown) => index++;
+	const memoized = memoize(fixture, {maxAge: 0});
+
+	memoized(1);
+	t.is(memoizeIsCached(memoized, 1), false);
+	memoized(2);
+	t.is(memoizeIsCached(memoized, 2), false);
+});
+
+test('memoizeIsCached() returns false for non-memoized functions', t => {
+	const fixture = (a?: unknown) => a;
+	t.is(memoizeIsCached(fixture, 1), false);
+});
+
+test('memoizeIsCached() handles same function memoized with different options', t => {
+	let index = 0;
+	const fixture = (a?: unknown, b?: unknown) => index++;
+
+	// Memoize the same function twice with different cache keys
+	const memoized1 = memoize(fixture);
+	const memoized2 = memoize(fixture, {cacheKey: JSON.stringify});
+
+	memoized1(1, 2);
+	memoized2(1, 2);
+
+	// Default cacheKey only considers first argument
+	t.is(memoizeIsCached(memoized1, 1, 2), true);
+	t.is(memoizeIsCached(memoized1, 1, 3), true); // Still cached (same first argument)
+
+	// JSON.stringify considers all arguments
+	t.is(memoizeIsCached(memoized2, 1, 2), true);
+	t.is(memoizeIsCached(memoized2, 1, 3), false); // Not cached (different arguments)
 });
 
 test('maxAge - zero maxAge means no caching', t => {

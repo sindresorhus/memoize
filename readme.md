@@ -260,6 +260,37 @@ Type: `Function`
 
 The memoized function.
 
+### memoizeIsCached(fn, ...arguments)
+
+Check if a call with specific arguments is already cached.
+
+Returns `true` if the result is cached, `false` otherwise.
+
+Uses the same argument processing as the memoized function, including any custom `cacheKey` function.
+
+```js
+import memoize, {memoizeIsCached} from 'memoize';
+
+const expensive = memoize((a, b) => a + b, {cacheKey: JSON.stringify});
+expensive(1, 2);
+
+memoizeIsCached(expensive, 1, 2);
+//=> true
+
+memoizeIsCached(expensive, 3, 4);
+//=> false
+```
+
+#### fn
+
+Type: `Function`
+
+The memoized function.
+
+#### arguments
+
+The arguments to check.
+
 ## Tips
 
 ### Cache statistics
