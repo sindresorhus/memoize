@@ -142,6 +142,7 @@ export default function memoize<
 		if (computedMaxAge && computedMaxAge > 0 && computedMaxAge !== Number.POSITIVE_INFINITY) {
 			const timer = setTimeout(() => {
 				cache.delete(key);
+				cacheTimerStore.get(function_)?.delete(timer as unknown as number);
 			}, computedMaxAge);
 
 			timer.unref?.();
