@@ -57,7 +57,9 @@ export type Options<
 	@default arguments_ => arguments_[0]
 	@example arguments_ => JSON.stringify(arguments_)
 	*/
-	readonly cacheKey?: (arguments_: Parameters<FunctionToMemoize>) => CacheKeyType;
+	readonly cacheKey?: (
+		arguments_: Parameters<FunctionToMemoize>,
+	) => CacheKeyType;
 
 	/**
 	Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`, `.delete(key)`, and optionally `.clear()`. You could for example use a `WeakMap` instead or [`quick-lru`](https://github.com/sindresorhus/quick-lru) for a LRU cache.
@@ -114,23 +116,35 @@ export default function memoize<
 	if (typeof maxAge === 'number') {
 		const maxSetIntervalValue = 2_147_483_647;
 		if (maxAge > maxSetIntervalValue) {
-			throw new TypeError(`The \`maxAge\` option cannot exceed ${maxSetIntervalValue}.`);
+			throw new TypeError(
+				`The \`maxAge\` option cannot exceed ${maxSetIntervalValue}.`,
+			);
 		}
 
 		if (maxAge < 0) {
-			throw new TypeError('The `maxAge` option should not be a negative number.');
+			throw new TypeError(
+				'The `maxAge` option should not be a negative number.',
+			);
 		}
 	}
 
-	const memoized = function (this: any, ...arguments_: Parameters<FunctionToMemoize>): ReturnType<FunctionToMemoize> {
-		const key = cacheKey ? cacheKey(arguments_) : arguments_[0] as CacheKeyType;
+	const memoized = function (
+		this: any,
+		...arguments_: Parameters<FunctionToMemoize>
+	): ReturnType<FunctionToMemoize> {
+		const key = cacheKey
+			? cacheKey(arguments_)
+			: (arguments_[0] as CacheKeyType);
 
 		const cacheItem = cache.get(key);
 		if (cacheItem) {
 			return cacheItem.data;
 		}
 
-		const result = function_.apply(this, arguments_) as ReturnType<FunctionToMemoize>;
+		const result = function_.apply(
+			this,
+			arguments_,
+		) as ReturnType<FunctionToMemoize>;
 
 		const computedMaxAge = typeof maxAge === 'function' ? maxAge(...arguments_) : maxAge;
 
@@ -194,34 +208,91 @@ class ExampleWithOptions {
 export function memoizeDecorator<
 	FunctionToMemoize extends AnyFunction,
 	CacheKeyType,
->(
-	options: Options<FunctionToMemoize, CacheKeyType> = {},
-) {
-	const instanceMap = new WeakMap();
+>(options: Options<FunctionToMemoize, CacheKeyType> = {}): MethodDecorator {
+	const memoizedMethodsMap = new WeakMap<any, AnyFunction>();
+	const memoizedValuesMap = new WeakMap<any, unknown>();
 
 	return (
-		target: any,
-		propertyKey: string,
+		_target: any,
+		_propertyKey: string | symbol,
 		descriptor: PropertyDescriptor,
 	): void => {
-		const input = target[propertyKey]; // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+		const originalIsGetter = typeof descriptor.get === 'function';
+		const originalIsValue = descriptor.value !== undefined;
 
-		if (typeof input !== 'function') {
-			throw new TypeError('The decorated value must be a function');
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+		const originalMethod = descriptor.value ?? descriptor.get;
+
+		if (typeof originalMethod !== 'function') {
+			throw new TypeError('The decorated value must be a function or a getter');
 		}
 
-		delete descriptor.value;
-		delete descriptor.writable;
+		if (originalIsGetter) {
+			// This was originally a getter. We must not specify `value` or `writable`.
+			delete descriptor.value;
+			delete descriptor.writable;
 
-		descriptor.get = function () {
-			if (!instanceMap.has(this)) {
-				const value = memoize(input, options) as FunctionToMemoize;
-				instanceMap.set(this, value);
+			descriptor.get = function (this: any): unknown {
+				if (memoizedValuesMap.has(this)) {
+					return memoizedValuesMap.get(this);
+				}
+
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+				const value = originalMethod.call(this);
+
+				memoizedValuesMap.set(this, value);
 				return value;
-			}
+			};
+		} else if (originalIsValue) {
+			delete descriptor.get;
+			delete descriptor.set;
 
-			return instanceMap.get(this) as FunctionToMemoize;
-		};
+			descriptor.value = function (this: any, ...arguments_: any[]) {
+				let memoizedFunction = memoizedMethodsMap.get(this);
+				if (memoizedFunction !== undefined) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+					return memoizedFunction(...arguments_);
+				}
+
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+				memoizedFunction = memoize(originalMethod.bind(this), options);
+
+				if (memoizedFunction === undefined) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+					return originalMethod.call(this, ...arguments_);
+				}
+
+				memoizedMethodsMap.set(this, memoizedFunction);
+
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+				return memoizedFunction(...arguments_);
+			};
+		} else {
+			// In case there's a scenario with no get/value, handle gracefully by defining a value property.
+			delete descriptor.get;
+			delete descriptor.set;
+
+			descriptor.value = function (this: any, ...arguments_: any[]) {
+				let memoizedFunction = memoizedMethodsMap.get(this);
+				if (memoizedFunction !== undefined) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+					return memoizedFunction(...arguments_);
+				}
+
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+				memoizedFunction = memoize(originalMethod.bind(this), options);
+
+				if (memoizedFunction === undefined) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+					return originalMethod.call(this, ...arguments_);
+				}
+
+				memoizedMethodsMap.set(this, memoizedFunction);
+
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+				return memoizedFunction(...arguments_);
+			};
+		}
 	};
 }
 
