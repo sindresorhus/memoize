@@ -1,10 +1,13 @@
 import {expectType} from 'tsd';
-import memoize, {memoizeClear} from '../index.js';
+import memoize, {memoizeClear, memoizeIsCached} from '../index.js';
 
 // eslint-disable-next-line unicorn/prefer-native-coercion-functions -- Required `string` type
 const function_ = (text: string) => Boolean(text);
 
-expectType<typeof function_>(memoize(function_));
+const memoized = memoize(function_);
+expectType<typeof function_>(memoized);
+expectType<boolean>(memoizeIsCached(memoized, 'test'));
+
 expectType<typeof function_>(memoize(function_, {maxAge: 1}));
 expectType<typeof function_>(memoize(function_, {cacheKey: ([firstArgument]: [string]) => firstArgument}));
 expectType<typeof function_>(
@@ -26,9 +29,11 @@ function overloadedFunction(parameter: boolean): boolean {
 	return parameter;
 }
 
-expectType<typeof overloadedFunction>(memoize(overloadedFunction));
-expectType<true>(memoize(overloadedFunction)(true));
-expectType<false>(memoize(overloadedFunction)(false));
+const memoizedOverloaded = memoize(overloadedFunction);
+// For overloaded functions, the isMemoized method uses the last overload signature
+expectType<true>(memoizedOverloaded(true));
+expectType<false>(memoizedOverloaded(false));
+expectType<boolean>(memoizeIsCached(memoizedOverloaded, true));
 
 memoizeClear(function_);
 

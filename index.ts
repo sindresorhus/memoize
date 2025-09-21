@@ -4,6 +4,7 @@ type AnyFunction = (...arguments_: readonly any[]) => unknown;
 
 const cacheStore = new WeakMap<AnyFunction, CacheStorage<any, any>>();
 const cacheTimerStore = new WeakMap<AnyFunction, Set<number>>();
+const cacheKeyStore = new WeakMap<AnyFunction, (arguments_: readonly any[]) => unknown>();
 
 type CacheStorageContent<ValueType> = {
 	data: ValueType;
@@ -158,6 +159,7 @@ export default function memoize<
 	});
 
 	cacheStore.set(memoized, cache);
+	cacheKeyStore.set(memoized, (cacheKey ?? ((arguments_: readonly any[]) => arguments_[0])) as (arguments_: readonly any[]) => unknown);
 
 	return memoized;
 }
@@ -242,4 +244,40 @@ export function memoizeClear(function_: AnyFunction): void {
 	for (const timer of cacheTimerStore.get(function_) ?? []) {
 		clearTimeout(timer);
 	}
+}
+
+/**
+Check if a specific set of arguments is cached for a memoized function.
+
+@param function_ - The memoized function.
+@param arguments_ - The arguments to check.
+@returns `true` if the arguments are cached, `false` otherwise.
+
+@example
+```
+import memoize, {memoizeIsCached} from 'memoize';
+
+const expensive = memoize((a, b) => a + b, {cacheKey: JSON.stringify});
+expensive(1, 2);
+
+memoizeIsCached(expensive, 1, 2);
+//=> true
+
+memoizeIsCached(expensive, 3, 4);
+//=> false
+```
+*/
+export function memoizeIsCached<FunctionToMemoize extends AnyFunction>(
+	function_: FunctionToMemoize,
+	...arguments_: Parameters<FunctionToMemoize>
+): boolean {
+	const cacheKey = cacheKeyStore.get(function_);
+	if (!cacheKey) {
+		return false;
+	}
+
+	const cache = cacheStore.get(function_)!;
+
+	const key = cacheKey(arguments_);
+	return cache.has(key);
 }
