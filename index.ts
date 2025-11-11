@@ -236,31 +236,34 @@ export function memoizeDecorator<
 >(
 	options: Options<FunctionToMemoize, CacheKeyType> = {},
 ) {
-	const instanceMap = new WeakMap();
-
 	return (
-		target: any,
-		propertyKey: string,
-		descriptor: PropertyDescriptor,
-	): void => {
-		const input = target[propertyKey]; // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+		target: FunctionToMemoize,
+		context: ClassMethodDecoratorContext,
+	): FunctionToMemoize | void => {
+		if (context.kind !== 'method') {
+			throw new TypeError('The decorator can only be applied to methods');
+		}
 
-		if (typeof input !== 'function') {
+		if (typeof target !== 'function') {
 			throw new TypeError('The decorated value must be a function');
 		}
 
-		delete descriptor.value;
-		delete descriptor.writable;
+		const instanceMap = new WeakMap();
 
-		descriptor.get = function () {
+		const memoizedFunction = function (this: any, ...arguments_: Parameters<FunctionToMemoize>) {
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 			if (!instanceMap.has(this)) {
-				const value = memoize(input, options) as FunctionToMemoize;
+				const value = memoize(target, options);
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 				instanceMap.set(this, value);
-				return value;
 			}
 
-			return instanceMap.get(this) as FunctionToMemoize;
-		};
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+			const memoized = instanceMap.get(this) as FunctionToMemoize;
+			return memoized.apply(this, arguments_) as ReturnType<FunctionToMemoize>;
+		} as FunctionToMemoize;
+
+		return memoizedFunction;
 	};
 }
 
