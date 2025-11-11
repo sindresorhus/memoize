@@ -1,5 +1,10 @@
 import {expectType} from 'tsd';
-import memoize, {memoizeClear, memoizeIsCached} from '../index.js';
+import memoize, {
+	memoizeClear,
+	memoizeIsCached,
+	type CacheItem,
+	type CacheLike,
+} from '../index.js';
 
 // eslint-disable-next-line unicorn/prefer-native-coercion-functions -- Required `string` type
 const function_ = (text: string) => Boolean(text);
@@ -81,3 +86,25 @@ memoize((_arguments: {key: string}) => 1, {
 		clear: () => undefined,
 	},
 });
+
+// Test that exported CacheItem and CacheLike types can be used to define custom caches
+type Key = string;
+type Value = number;
+
+// Test CacheItem type
+const cacheItem: CacheItem<Value> = {
+	data: 42,
+	maxAge: Date.now() + 1000,
+};
+expectType<Value>(cacheItem.data);
+expectType<number>(cacheItem.maxAge);
+
+// Test CacheLike type with Map-based implementation
+const customCache: CacheLike<Key, Value> = new Map<Key, CacheItem<Value>>();
+expectType<boolean>(customCache.has('test'));
+expectType<CacheItem<Value> | undefined>(customCache.get('test'));
+
+// Test using CacheLike in memoize options
+const customCacheMap: CacheLike<string, number> = new Map();
+const memoizedWithCustomCache = memoize(Number, {cache: customCacheMap});
+expectType<typeof Number>(memoizedWithCustomCache);
