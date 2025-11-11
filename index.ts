@@ -9,12 +9,12 @@ const cacheStore = new WeakMap<AnyFunction, CacheLike<unknown, unknown>>();
 const cacheTimerStore = new WeakMap<AnyFunction, Set<Timer>>();
 const cacheKeyStore = new WeakMap<AnyFunction, (arguments_: readonly any[]) => unknown>();
 
-type CacheItem<ValueType> = {
+export type CacheItem<ValueType> = {
 	data: ValueType;
 	maxAge: number;
 };
 
-type CacheLike<KeyType, ValueType> = {
+export type CacheLike<KeyType, ValueType> = {
 	has: (key: KeyType) => boolean;
 	get: (key: KeyType) => CacheItem<ValueType> | undefined;
 	set: (key: KeyType, value: CacheItem<ValueType>) => void;
