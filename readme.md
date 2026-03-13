@@ -218,13 +218,12 @@ Refer to the [caching strategies](#caching-strategy) section for more informatio
 
 ### memoizeDecorator(options)
 
-Returns a [decorator](https://github.com/tc39/proposal-decorators) to memoize class methods or static class methods.
+Returns a [decorator](https://github.com/tc39/proposal-decorators) to memoize class methods, static class methods, or getters.
 
 Notes:
 
-- Only class methods and getters/setters can be memoized, not regular functions (they aren't part of the proposal);
-- Only [TypeScript’s decorators](https://www.typescriptlang.org/docs/handbook/decorators.html#parameter-decorators) are supported, not [Babel’s](https://babeljs.io/docs/en/babel-plugin-proposal-decorators), which use a different version of the proposal;
-- Being an experimental feature, they need to be enabled with `--experimentalDecorators`; follow TypeScript’s docs.
+- Uses [TC39 stage 3 decorators](https://github.com/tc39/proposal-decorators), supported natively in TypeScript 5.0+ and modern JavaScript engines;
+- Only class methods and getters can be memoized.
 
 #### options
 
@@ -250,6 +249,13 @@ class ExampleWithOptions {
 	@memoizeDecorator({maxAge: 1000})
 	counter() {
 		return ++this.index;
+	}
+}
+
+class ExampleWithGetter {
+	@memoizeDecorator()
+	get value() {
+		return expensiveComputation();
 	}
 }
 ```

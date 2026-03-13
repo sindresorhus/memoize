@@ -218,6 +218,558 @@ test('memoizeDecorator()', t => {
 	t.is(beta.counter(), 2, 'The method should not be memoized across instances');
 });
 
+test('memoizeDecorator() does not call getters during decoration', t => {
+	class TestClass {
+		isInitialized = false;
+
+		constructor() {
+			this.isInitialized = true;
+		}
+
+		@memoizeDecorator()
+		get value() {
+			if (!this.isInitialized) {
+				throw new Error('constructor has not been called');
+			}
+
+			return Math.random();
+		}
+	}
+
+	const instance = new TestClass();
+	t.notThrows(() => {
+		const {value} = instance;
+		t.is(instance.value, value);
+	});
+});
+
+test('memoizeDecorator() applies options to getters', async t => {
+	class TestClass {
+		value = 0;
+
+		@memoizeDecorator({maxAge: 50})
+		get nextValue() {
+			this.value++;
+			return this.value;
+		}
+	}
+
+	const instance = new TestClass();
+	t.is(instance.nextValue, 1);
+	t.is(instance.nextValue, 1);
+	await delay(70);
+	t.is(instance.nextValue, 2);
+});
+
+test('memoizeDecorator() memoizes getters per instance', t => {
+	class TestClass {
+		value = 0;
+
+		@memoizeDecorator()
+		get nextValue() {
+			this.value++;
+			return this.value;
+		}
+	}
+
+	const firstInstance = new TestClass();
+	const secondInstance = new TestClass();
+
+	t.is(firstInstance.nextValue, 1);
+	t.is(firstInstance.nextValue, 1);
+	t.is(secondInstance.nextValue, 1);
+	t.is(secondInstance.nextValue, 1);
+});
+
+test('memoizeDecorator() works with static methods', t => {
+	let value = 0;
+
+	class BaseClass {
+		value = 0;
+
+		@memoizeDecorator()
+		static nextValue(key: string) {
+			value++;
+			return `${this.name}-${key}-${value}`;
+		}
+	}
+
+	class ChildClass extends BaseClass {}
+
+	t.false(Object.hasOwn(ChildClass, 'nextValue'));
+
+	t.is(BaseClass.nextValue('a'), 'BaseClass-a-1');
+	t.is(BaseClass.nextValue('a'), 'BaseClass-a-1');
+	t.true(memoizeIsCached(BaseClass.nextValue, 'a'));
+
+	t.is(ChildClass.nextValue('a'), 'ChildClass-a-2');
+	t.is(ChildClass.nextValue('a'), 'ChildClass-a-2');
+	t.true(memoizeIsCached(ChildClass.nextValue, 'a'));
+	t.true(Object.hasOwn(ChildClass, 'nextValue'));
+	t.false(Object.prototype.propertyIsEnumerable.call(ChildClass, 'nextValue'));
+
+	memoizeClear(BaseClass.nextValue);
+	t.is(BaseClass.nextValue('a'), 'BaseClass-a-3');
+	t.is(ChildClass.nextValue('a'), 'ChildClass-a-2');
+});
+
+test('memoizeDecorator() keeps static method caches isolated per receiver', t => {
+	let value = 0;
+
+	class BaseClass {
+		value = 0;
+
+		@memoizeDecorator()
+		static nextValue(key: string) {
+			value++;
+			return `${this.name}-${key}-${value}`;
+		}
+	}
+
+	class ChildClass extends BaseClass {}
+
+	t.not(BaseClass.nextValue, ChildClass.nextValue);
+	t.is(BaseClass.nextValue('a'), 'BaseClass-a-1');
+	t.is(ChildClass.nextValue('a'), 'ChildClass-a-2');
+	t.true(memoizeIsCached(BaseClass.nextValue, 'a'));
+	t.true(memoizeIsCached(ChildClass.nextValue, 'a'));
+
+	memoizeClear(ChildClass.nextValue);
+	t.true(memoizeIsCached(BaseClass.nextValue, 'a'));
+	t.false(memoizeIsCached(ChildClass.nextValue, 'a'));
+	t.is(BaseClass.nextValue('a'), 'BaseClass-a-1');
+	t.is(ChildClass.nextValue('a'), 'ChildClass-a-3');
+});
+
+test('memoizeDecorator() preserves late binding for deep static inheritance', t => {
+	let value = 0;
+
+	class BaseClass {
+		value = 0;
+
+		@memoizeDecorator()
+		static nextValue(key: string) {
+			value++;
+			return `${this.name}-${key}-${value}`;
+		}
+	}
+
+	class ChildClass extends BaseClass {}
+	class GrandChildClass extends ChildClass {}
+
+	t.is(ChildClass.nextValue('a'), 'ChildClass-a-1');
+	t.is(ChildClass.nextValue('a'), 'ChildClass-a-1');
+	t.is(GrandChildClass.nextValue('a'), 'GrandChildClass-a-2');
+	t.is(GrandChildClass.nextValue('a'), 'GrandChildClass-a-2');
+	t.true(memoizeIsCached(ChildClass.nextValue, 'a'));
+	t.true(memoizeIsCached(GrandChildClass.nextValue, 'a'));
+});
+
+test('memoizeDecorator() preserves static overrides that call super', t => {
+	class BaseClass {
+		static count = 0;
+		value = 0;
+
+		@memoizeDecorator()
+		static nextValue() {
+			this.count ??= 0;
+			this.count++;
+			return `${this.name}-${this.count}`;
+		}
+	}
+
+	class ChildClass extends BaseClass {
+		static count = 0;
+
+		static override nextValue() {
+			return `child:${super.nextValue()}`;
+		}
+	}
+
+	class GrandChildClass extends ChildClass {
+		static count = 0;
+	}
+
+	t.is(ChildClass.nextValue(), 'child:ChildClass-1');
+	t.is(ChildClass.nextValue(), 'child:ChildClass-1');
+	t.is(GrandChildClass.nextValue(), 'child:GrandChildClass-1');
+	t.is(GrandChildClass.nextValue(), 'child:GrandChildClass-1');
+	t.is(ChildClass.count, 1);
+	t.is(GrandChildClass.count, 1);
+});
+
+test('memoizeDecorator() installs instance methods as non-enumerable own properties', t => {
+	let value = 0;
+
+	class TestClass {
+		@memoizeDecorator()
+		nextValue() {
+			value++;
+			return value;
+		}
+	}
+
+	const instance = new TestClass();
+	t.true(Object.hasOwn(instance, 'nextValue'));
+
+	const methodBeforeCall = instance.nextValue;
+	t.is(instance.nextValue(), 1);
+	t.is(instance.nextValue(), 1);
+	t.true(Object.hasOwn(instance, 'nextValue'));
+	t.is(instance.nextValue, methodBeforeCall);
+
+	const descriptor = Object.getOwnPropertyDescriptor(instance, 'nextValue');
+	t.truthy(descriptor);
+	t.is(descriptor?.enumerable, false);
+	t.is(descriptor?.configurable, true);
+	t.is(descriptor?.writable, true);
+});
+
+test('memoizeDecorator() keeps instance method caches isolated per instance', t => {
+	let value = 0;
+
+	class TestClass {
+		@memoizeDecorator()
+		nextValue(key: string) {
+			value++;
+			return `${key}-${value}`;
+		}
+	}
+
+	const firstInstance = new TestClass();
+	const secondInstance = new TestClass();
+
+	t.not(firstInstance.nextValue, secondInstance.nextValue);
+	t.is(firstInstance.nextValue('a'), 'a-1');
+	t.is(secondInstance.nextValue('a'), 'a-2');
+	t.true(memoizeIsCached(firstInstance.nextValue, 'a'));
+	t.true(memoizeIsCached(secondInstance.nextValue, 'a'));
+
+	memoizeClear(firstInstance.nextValue);
+	t.false(memoizeIsCached(firstInstance.nextValue, 'a'));
+	t.true(memoizeIsCached(secondInstance.nextValue, 'a'));
+	t.is(firstInstance.nextValue('a'), 'a-3');
+	t.is(secondInstance.nextValue('a'), 'a-2');
+});
+
+test('memoizeDecorator() memoizes inherited methods per instance', t => {
+	let value = 0;
+
+	class BaseClass {
+		@memoizeDecorator()
+		nextValue() {
+			value++;
+			return `${this.constructor.name}-${value}`;
+		}
+	}
+
+	class ChildClass extends BaseClass {}
+
+	const baseInstance = new BaseClass();
+	const childInstance = new ChildClass();
+
+	t.true(Object.hasOwn(baseInstance, 'nextValue'));
+	t.true(Object.hasOwn(childInstance, 'nextValue'));
+	t.is(baseInstance.nextValue(), 'BaseClass-1');
+	t.is(baseInstance.nextValue(), 'BaseClass-1');
+	t.is(childInstance.nextValue(), 'ChildClass-2');
+	t.is(childInstance.nextValue(), 'ChildClass-2');
+	t.true(Object.hasOwn(childInstance, 'nextValue'));
+});
+
+test('memoizeDecorator() preserves subclass overrides', t => {
+	let baseValue = 0;
+	let childValue = 0;
+
+	class BaseClass {
+		@memoizeDecorator()
+		value() {
+			baseValue++;
+			return `base-${baseValue}`;
+		}
+	}
+
+	class ChildClass extends BaseClass {
+		override value() {
+			childValue++;
+			return `child-${childValue}`;
+		}
+	}
+
+	const baseInstance = new BaseClass();
+	t.is(baseInstance.value(), 'base-1');
+	t.is(baseInstance.value(), 'base-1');
+
+	const childInstance = new ChildClass();
+	t.is(childInstance.value(), 'child-1');
+	t.is(childInstance.value(), 'child-2');
+});
+
+test('memoizeDecorator() does not touch overridden accessors during super()', t => {
+	class BaseClass {
+		@memoizeDecorator()
+		value() {
+			return 'base';
+		}
+	}
+
+	class ChildClass extends BaseClass {
+		isInitialized = false;
+
+		constructor() {
+			super();
+			this.isInitialized = true;
+		}
+
+		override get value() {
+			if (!this.isInitialized) {
+				throw new Error('constructor has not finished');
+			}
+
+			return () => 'child';
+		}
+	}
+
+	const instance = new ChildClass();
+	t.is(instance.value(), 'child');
+});
+
+test('memoizeDecorator() keeps extracted methods bound to their instance', t => {
+	class TestClass {
+		count = 0;
+
+		@memoizeDecorator()
+		nextValue(key: string) {
+			this.count++;
+			return `${this.count}-${key}`;
+		}
+	}
+
+	const firstInstance = new TestClass();
+	const secondInstance = new TestClass();
+	const {nextValue} = firstInstance;
+
+	t.is(nextValue('a'), '1-a');
+	t.is(nextValue('a'), '1-a');
+	t.is(firstInstance.count, 1);
+	t.is(secondInstance.count, 0);
+});
+
+test('memoizeDecorator() keeps extracted static methods bound to their class', t => {
+	class BaseClass {
+		static count = 0;
+
+		value = 0;
+
+		@memoizeDecorator()
+		static nextValue(key: string) {
+			this.count ??= 0;
+			this.count++;
+			return `${this.name}-${this.count}-${key}`;
+		}
+	}
+
+	class ChildClass extends BaseClass {
+		static count = 0;
+	}
+
+	const {nextValue} = BaseClass;
+
+	t.is(nextValue('a'), 'BaseClass-1-a');
+	t.is(nextValue('a'), 'BaseClass-1-a');
+	t.is(BaseClass.count, 1);
+	t.is(ChildClass.count, 0);
+});
+
+test('memoizeDecorator() utilities work with extracted instance methods', t => {
+	class TestClass {
+		count = 0;
+
+		@memoizeDecorator()
+		nextValue(key: string) {
+			this.count++;
+			return `${this.count}-${key}`;
+		}
+	}
+
+	const firstInstance = new TestClass();
+	const secondInstance = new TestClass();
+	const {nextValue} = firstInstance;
+
+	t.is(nextValue('a'), '1-a');
+	t.is(secondInstance.nextValue('a'), '1-a');
+	t.true(memoizeIsCached(nextValue, 'a'));
+	t.true(memoizeIsCached(secondInstance.nextValue, 'a'));
+
+	memoizeClear(nextValue);
+	t.false(memoizeIsCached(nextValue, 'a'));
+	t.true(memoizeIsCached(secondInstance.nextValue, 'a'));
+	t.is(nextValue('a'), '2-a');
+	t.is(secondInstance.nextValue('a'), '1-a');
+});
+
+test('memoizeDecorator() utilities work with extracted static methods', t => {
+	class BaseClass {
+		static count = 0;
+		value = 0;
+
+		@memoizeDecorator()
+		static nextValue(key: string) {
+			this.count ??= 0;
+			this.count++;
+			return `${this.name}-${this.count}-${key}`;
+		}
+	}
+
+	class ChildClass extends BaseClass {}
+
+	const {nextValue} = ChildClass;
+
+	t.is(nextValue('a'), 'ChildClass-1-a');
+	t.is(BaseClass.nextValue('a'), 'BaseClass-1-a');
+	t.true(memoizeIsCached(nextValue, 'a'));
+	t.true(memoizeIsCached(BaseClass.nextValue, 'a'));
+
+	memoizeClear(nextValue);
+	t.false(memoizeIsCached(nextValue, 'a'));
+	t.true(memoizeIsCached(BaseClass.nextValue, 'a'));
+	t.is(nextValue('a'), 'ChildClass-2-a');
+	t.is(BaseClass.nextValue('a'), 'BaseClass-1-a');
+});
+
+test('memoizeDecorator() rejects private methods', t => {
+	t.throws(() => {
+		class TestClass {
+			value() {
+				return this.#nextValue();
+			}
+
+			@memoizeDecorator()
+			#nextValue() {
+				return Math.random();
+			}
+		}
+
+		return new TestClass().value();
+	}, {
+		message: 'The `memoizeDecorator` method decorator does not support private methods.',
+		instanceOf: TypeError,
+	});
+});
+
+test('memoizeDecorator() keeps methods off enumerable instance keys', t => {
+	class TestClass {
+		value = 1;
+
+		@memoizeDecorator()
+		nextValue() {
+			return this.value;
+		}
+	}
+
+	const instance = new TestClass();
+	t.is(instance.nextValue(), 1);
+	t.deepEqual(Object.keys(instance), ['value']);
+	t.deepEqual({...instance}, {value: 1});
+	t.false(Object.prototype.propertyIsEnumerable.call(instance, 'nextValue'));
+});
+
+test('memoizeDecorator() applies cacheKey to methods', t => {
+	let value = 0;
+
+	class TestClass {
+		@memoizeDecorator({cacheKey: arguments_ => arguments_.join(':')})
+		nextValue(first: string, second: string) {
+			value++;
+			return `${first}-${second}-${value}`;
+		}
+	}
+
+	const instance = new TestClass();
+	t.is(instance.nextValue('a', 'b'), 'a-b-1');
+	t.is(instance.nextValue('a', 'b'), 'a-b-1');
+	t.true(memoizeIsCached(instance.nextValue, 'a', 'b'));
+	t.false(memoizeIsCached(instance.nextValue, 'b', 'a'));
+	t.is(instance.nextValue('b', 'a'), 'b-a-2');
+});
+
+test('memoizeDecorator() applies maxAge to methods per instance', async t => {
+	let value = 0;
+
+	class TestClass {
+		@memoizeDecorator({maxAge: 50})
+		nextValue(key: string) {
+			value++;
+			return `${key}-${value}`;
+		}
+	}
+
+	const firstInstance = new TestClass();
+	const secondInstance = new TestClass();
+
+	t.is(firstInstance.nextValue('a'), 'a-1');
+	t.is(firstInstance.nextValue('a'), 'a-1');
+	t.is(secondInstance.nextValue('a'), 'a-2');
+	t.is(secondInstance.nextValue('a'), 'a-2');
+
+	await delay(70);
+
+	t.is(firstInstance.nextValue('a'), 'a-3');
+	t.is(secondInstance.nextValue('a'), 'a-4');
+});
+
+test('memoizeDecorator() supports non-cached getters with maxAge 0', t => {
+	class TestClass {
+		value = 0;
+
+		@memoizeDecorator({maxAge: 0})
+		get nextValue() {
+			this.value++;
+			return this.value;
+		}
+	}
+
+	const instance = new TestClass();
+	t.is(instance.nextValue, 1);
+	t.is(instance.nextValue, 2);
+});
+
+test('memoizeClear() works with memoizeDecorator()', t => {
+	let value = 0;
+
+	class TestClass {
+		@memoizeDecorator()
+		nextValue() {
+			value++;
+			return value;
+		}
+	}
+
+	const instance = new TestClass();
+	t.is(instance.nextValue(), 1);
+	t.is(instance.nextValue(), 1);
+	memoizeClear(instance.nextValue);
+	t.is(instance.nextValue(), 2);
+});
+
+test('memoizeIsCached() works with memoizeDecorator()', t => {
+	let value = 0;
+
+	class TestClass {
+		@memoizeDecorator()
+		nextValue(key: string) {
+			value++;
+			return `${key}-${value}`;
+		}
+	}
+
+	const instance = new TestClass();
+	t.false(memoizeIsCached(instance.nextValue, 'a'));
+	t.is(instance.nextValue('a'), 'a-1');
+	t.true(memoizeIsCached(instance.nextValue, 'a'));
+	t.false(memoizeIsCached(instance.nextValue, 'b'));
+});
+
 test('memoizeClear() throws when called with a plain function', t => {
 	t.throws(() => {
 		memoizeClear(() => {}); // eslint-disable-line @typescript-eslint/no-empty-function

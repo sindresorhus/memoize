@@ -1,5 +1,5 @@
 import {expectType} from 'tsd';
-import memoize, {memoizeClear, memoizeIsCached} from '../index.js';
+import memoize, {memoizeClear, memoizeDecorator, memoizeIsCached} from '../index.js';
 
 // eslint-disable-next-line unicorn/prefer-native-coercion-functions -- Required `string` type
 const function_ = (text: string) => Boolean(text);
@@ -81,3 +81,27 @@ memoize((_arguments: {key: string}) => 1, {
 		clear: () => undefined,
 	},
 });
+
+class DecoratedClass {
+	value = 'value';
+
+	@memoizeDecorator()
+	method(text: string) {
+		return text;
+	}
+
+	@memoizeDecorator()
+	static staticMethod(text: string) {
+		return text;
+	}
+
+	@memoizeDecorator()
+	get getter() {
+		return this.value;
+	}
+}
+
+const decorated = new DecoratedClass();
+expectType<string>(decorated.method('test'));
+expectType<string>(DecoratedClass.staticMethod('test'));
+expectType<string>(decorated.getter);

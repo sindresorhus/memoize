@@ -1,8 +1,5 @@
 {
 	"extends": "@sindresorhus/tsconfig",
-	"compilerOptions": {
-		"experimentalDecorators": true
-	},
 	"files": [
 		"index.ts"
 	],

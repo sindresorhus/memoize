@@ -92,6 +92,22 @@ function getValidCacheItem<KeyType, ValueType>(
 	return item;
 }
 
+function getPropertyDescriptor(object: WeakKey, property: string | symbol): PropertyDescriptor | undefined {
+	let currentObject: WeakKey | undefined = object;
+
+	while (currentObject) {
+		const descriptor = Object.getOwnPropertyDescriptor(currentObject, property);
+		if (descriptor) {
+			return descriptor;
+		}
+
+		const prototype: unknown = Object.getPrototypeOf(currentObject);
+		currentObject = prototype === null ? undefined : prototype as WeakKey;
+	}
+
+	return undefined;
+}
+
 /**
 [Memoize](https://en.wikipedia.org/wiki/Memoization) functions - An optimization used to speed up consecutive function calls by caching the result of calls with identical input.
 
@@ -205,7 +221,7 @@ export default function memoize<
 }
 
 /**
-@returns A [decorator](https://github.com/tc39/proposal-decorators) to memoize class methods or static class methods.
+@returns A [decorator](https://github.com/tc39/proposal-decorators) to memoize class methods, static class methods, or getters.
 
 @example
 ```
@@ -228,6 +244,13 @@ class ExampleWithOptions {
 		return ++this.index;
 	}
 }
+
+class ExampleWithGetter {
+	@memoizeDecorator()
+	get value() {
+		return expensiveComputation();
+	}
+}
 ```
 */
 export function memoizeDecorator<
@@ -236,32 +259,109 @@ export function memoizeDecorator<
 >(
 	options: Options<FunctionToMemoize, CacheKeyType> = {},
 ) {
-	const instanceMap = new WeakMap();
-
-	return (
-		target: any,
-		propertyKey: string,
-		descriptor: PropertyDescriptor,
-	): void => {
-		const input = target[propertyKey]; // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-
-		if (typeof input !== 'function') {
-			throw new TypeError('The decorated value must be a function');
-		}
-
-		delete descriptor.value;
-		delete descriptor.writable;
-
-		descriptor.get = function () {
-			if (!instanceMap.has(this)) {
-				const value = memoize(input, options) as FunctionToMemoize;
-				instanceMap.set(this, value);
-				return value;
+	function decorator<This, ArgumentsType extends readonly unknown[], ReturnValueType>(
+		target: (this: This, ...arguments_: ArgumentsType) => ReturnValueType,
+		context: ClassMethodDecoratorContext<This, (this: This, ...arguments_: ArgumentsType) => ReturnValueType>,
+	): (this: This, ...arguments_: ArgumentsType) => ReturnValueType;
+	function decorator<This, ReturnValueType>(
+		target: (this: This) => ReturnValueType,
+		context: ClassGetterDecoratorContext<This, ReturnValueType>,
+	): (this: This) => ReturnValueType;
+	function decorator(
+		target: AnyFunction,
+		context: ClassMethodDecoratorContext | ClassGetterDecoratorContext,
+	) {
+		if (context.kind === 'method') {
+			if (context.private) {
+				throw new TypeError('The `memoizeDecorator` method decorator does not support private methods.');
 			}
 
-			return instanceMap.get(this) as FunctionToMemoize;
+			const memoizedMethods = new WeakMap<WeakKey, FunctionToMemoize>();
+
+			const getMemoizedMethod = (receiver: WeakKey): FunctionToMemoize => {
+				let memoizedMethod = memoizedMethods.get(receiver);
+				if (!memoizedMethod) {
+					memoizedMethod = memoize(target.bind(receiver) as FunctionToMemoize, options);
+					memoizedMethods.set(receiver, memoizedMethod);
+				}
+
+				return memoizedMethod;
+			};
+
+			const installMethod = (receiver: Record<string | symbol, unknown>, method: FunctionToMemoize): FunctionToMemoize => {
+				Object.defineProperty(receiver, context.name, {
+					configurable: true,
+					enumerable: false,
+					value: method,
+					writable: true,
+				});
+
+				return method;
+			};
+
+			const installStaticMethodGetter = (receiver: Record<string | symbol, unknown> & WeakKey): void => {
+				Object.defineProperty(receiver, context.name, {
+					configurable: true,
+					enumerable: false,
+					get() {
+						const currentReceiver = this as Record<string | symbol, unknown> & WeakKey;
+						if (currentReceiver !== receiver) {
+							const currentPrototype: unknown = Object.getPrototypeOf(currentReceiver);
+							if (
+								currentPrototype === receiver
+								&& !Object.hasOwn(currentReceiver, context.name)
+							) {
+								installStaticMethodGetter(currentReceiver);
+							}
+						}
+
+						return getMemoizedMethod(currentReceiver);
+					},
+				});
+			};
+
+			const decoratedMethod = function (this: WeakKey, ...arguments_: Parameters<FunctionToMemoize>): ReturnType<FunctionToMemoize> {
+				return getMemoizedMethod(this)(...arguments_) as ReturnType<FunctionToMemoize>;
+			} as FunctionToMemoize;
+
+			mimicFunction(decoratedMethod, target, {
+				ignoreNonConfigurable: true,
+			});
+
+			if (context.static) {
+				context.addInitializer(function () {
+					installStaticMethodGetter(this as Record<string | symbol, unknown> & WeakKey);
+				});
+			} else {
+				context.addInitializer(function () {
+					const receiver = this as Record<string | symbol, unknown> & WeakKey;
+					// Checking the descriptor avoids invoking an overriding accessor while `super()` is still running.
+					const descriptor = getPropertyDescriptor(Object.getPrototypeOf(receiver) as WeakKey, context.name);
+					if (descriptor?.value !== decoratedMethod) {
+						return;
+					}
+
+					installMethod(receiver, getMemoizedMethod(receiver));
+				});
+			}
+
+			return decoratedMethod;
+		}
+
+		const memoizedGetters = new WeakMap<WeakKey, () => ReturnType<FunctionToMemoize>>();
+
+		return function (this: unknown) {
+			let memoizedGetter = memoizedGetters.get(this as WeakKey);
+			if (!memoizedGetter) {
+				memoizedGetter = memoize(() => target.call(this) as ReturnType<FunctionToMemoize>, options as Options<() => ReturnType<FunctionToMemoize>, CacheKeyType>);
+				memoizedGetters.set(this as WeakKey, memoizedGetter);
+			}
+
+			return memoizedGetter();
 		};
-	};
+	}
+
+	return decorator;
 }
 
 /**
