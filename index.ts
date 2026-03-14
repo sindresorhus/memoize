@@ -15,7 +15,6 @@ export type CacheItem<ValueType> = {
 };
 
 export type CacheLike<KeyType, ValueType> = {
-	has: (key: KeyType) => boolean;
 	get: (key: KeyType) => CacheItem<ValueType> | undefined;
 	set: (key: KeyType, value: CacheItem<ValueType>) => void;
 	delete: (key: KeyType) => void;
@@ -67,7 +66,7 @@ export type Options<
 	readonly cacheKey?: (arguments_: Parameters<FunctionToMemoize>) => CacheKeyType;
 
 	/**
-	Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`, `.delete(key)`, and optionally `.clear()`. You could for example use a `WeakMap` instead or [`quick-lru`](https://github.com/sindresorhus/quick-lru) for a LRU cache.
+	Use a different cache storage. Must implement the following methods: `.get(key)`, `.set(key, value)`, `.delete(key)`, and optionally `.clear()`. You could for example use a `WeakMap` instead or [`quick-lru`](https://github.com/sindresorhus/quick-lru) for a LRU cache.
 
 	@default new Map()
 	@example new WeakMap()
@@ -90,6 +89,28 @@ function getValidCacheItem<KeyType, ValueType>(
 	}
 
 	return item;
+}
+
+function validateMaxAge(value: number, source: '`maxAge` option' | '`maxAge` function result'): void {
+	if (value === Number.POSITIVE_INFINITY) {
+		return;
+	}
+
+	if (!Number.isFinite(value)) {
+		if (source === '`maxAge` option') {
+			throw new TypeError('The `maxAge` option must be a finite number, `0`, or `Infinity`.');
+		}
+
+		throw new TypeError('The `maxAge` function must return a finite number, `0`, or `Infinity`.');
+	}
+
+	if (value > maxTimeoutValue) {
+		if (source === '`maxAge` option') {
+			throw new TypeError(`The \`maxAge\` option cannot exceed ${maxTimeoutValue}.`);
+		}
+
+		throw new TypeError(`The \`maxAge\` function result cannot exceed ${maxTimeoutValue}.`);
+	}
 }
 
 function getPropertyDescriptor(object: WeakKey, property: string | symbol): PropertyDescriptor | undefined {
@@ -147,17 +168,10 @@ export default function memoize<
 		maxAge,
 	}: Options<FunctionToMemoize, CacheKeyType> = {},
 ): FunctionToMemoize {
-	if (maxAge === 0) {
-		return function_;
-	}
-
-	if (typeof maxAge === 'number' && Number.isFinite(maxAge)) {
-		if (maxAge > maxTimeoutValue) {
-			throw new TypeError(`The \`maxAge\` option cannot exceed ${maxTimeoutValue}.`);
-		}
-
-		if (maxAge < 0) {
-			throw new TypeError('The `maxAge` option should not be a negative number.');
+	if (typeof maxAge === 'number') {
+		validateMaxAge(maxAge, '`maxAge` option');
+		if (maxAge <= 0) {
+			return function_;
 		}
 	}
 
@@ -173,16 +187,10 @@ export default function memoize<
 
 		const computedMaxAge = typeof maxAge === 'function' ? maxAge(...arguments_) : maxAge;
 		if (computedMaxAge !== undefined && computedMaxAge !== Number.POSITIVE_INFINITY) {
-			if (!Number.isFinite(computedMaxAge)) {
-				throw new TypeError('The `maxAge` function must return a finite number, `0`, or `Infinity`.');
-			}
+			validateMaxAge(computedMaxAge, '`maxAge` function result');
 
 			if (computedMaxAge <= 0) {
 				return result; // Do not cache
-			}
-
-			if (computedMaxAge > maxTimeoutValue) {
-				throw new TypeError(`The \`maxAge\` function result cannot exceed ${maxTimeoutValue}.`);
 			}
 		}
 

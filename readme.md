@@ -100,7 +100,7 @@ You will have to use the `cache` and `cacheKey` options appropriate to your func
 import memoize from 'memoize';
 
 const pow = memoize((a, b) => Math.pow(a, b), {
-  cacheKey: arguments_ => arguments_.join(',')
+	cacheKey: arguments_ => arguments_.join(',')
 });
 
 pow(2, 2); // => 4, stored in cache with the key '2,2' (both arguments as one string)
@@ -212,7 +212,7 @@ Refer to the [caching strategies](#caching-strategy) section for more informatio
 Type: `object`\
 Default: `new Map()`
 
-Use a different cache storage. Must implement the following methods: `.has(key)`, `.get(key)`, `.set(key, value)`, `.delete(key)`, and optionally `.clear()`. You could for example use a `WeakMap` instead or [`quick-lru`](https://github.com/sindresorhus/quick-lru) for a LRU cache.
+Use a different cache storage. Must implement the following methods: `.get(key)`, `.set(key, value)`, `.delete(key)`, and optionally `.clear()`. You could for example use a `WeakMap` instead or [`quick-lru`](https://github.com/sindresorhus/quick-lru) for a LRU cache.
 
 Refer to the [caching strategies](#caching-strategy) section for more information.
 

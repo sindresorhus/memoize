@@ -943,6 +943,16 @@ test('maxAge - zero maxAge means no caching', t => {
 	t.is(memoized(), 1); // No caching, should increment
 });
 
+test('maxAge - negative number disables caching', t => {
+	let index = 0;
+	const fixture = () => index++;
+	const memoized = memoize(fixture, {maxAge: -1});
+
+	t.is(memoized(), 0);
+	t.is(memoized(), 1);
+	t.false(memoizeIsCached(memoized));
+});
+
 test('maxAge - immediate expiration', async t => {
 	let index = 0;
 	const fixture = () => index++;
@@ -1061,6 +1071,15 @@ test('maxAge function validation - throws on non-finite non-Infinity', t => {
 	t.throws(() => memoized(), {
 		instanceOf: TypeError,
 		message: 'The `maxAge` function must return a finite number, `0`, or `Infinity`.',
+	});
+});
+
+test('maxAge option validation - throws on non-finite non-Infinity', t => {
+	t.throws(() => {
+		memoize(() => 42, {maxAge: Number.NaN});
+	}, {
+		instanceOf: TypeError,
+		message: 'The `maxAge` option must be a finite number, `0`, or `Infinity`.',
 	});
 });
 

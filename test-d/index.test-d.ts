@@ -71,10 +71,6 @@ memoize((_arguments: {key: string}) => 1, {
 			expectType<Date>(key);
 			expectType<{data: number; maxAge: number}>(data);
 		},
-		has(key) {
-			expectType<Date>(key);
-			return true;
-		},
 		delete(key) {
 			expectType<Date>(key);
 		},
