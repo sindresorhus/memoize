@@ -207,7 +207,6 @@ export default function memoize<
 				cacheTimerStore.get(memoized)?.delete(timer);
 			}, computedMaxAge);
 
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 			(timer as any).unref?.();
 
 			const timers = cacheTimerStore.get(memoized) ?? new Set<Timer>();
@@ -264,9 +263,7 @@ class ExampleWithGetter {
 export function memoizeDecorator<
 	FunctionToMemoize extends AnyFunction,
 	CacheKeyType,
->(
-	options: Options<FunctionToMemoize, CacheKeyType> = {},
-) {
+>(options: Options<FunctionToMemoize, CacheKeyType> = {}) {
 	function decorator<This, ArgumentsType extends readonly unknown[], ReturnValueType>(
 		target: (this: This, ...arguments_: ArgumentsType) => ReturnValueType,
 		context: ClassMethodDecoratorContext<This, (this: This, ...arguments_: ArgumentsType) => ReturnValueType>,

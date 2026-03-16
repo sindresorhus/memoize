@@ -59,10 +59,10 @@ test('memoize with regexp arguments', t => {
 	const memoized = memoize((a?: unknown) => index++, {cacheKey: serializeJavascript});
 	t.is(memoized(), 0);
 	t.is(memoized(), 0);
-	t.is(memoized(/Sindre Sorhus/), 1);
-	t.is(memoized(/Sindre Sorhus/), 1);
-	t.is(memoized(/Elvin Peng/), 2);
-	t.is(memoized(/Elvin Peng/), 2);
+	t.is(memoized(/Sindre Sorhus/v), 1);
+	t.is(memoized(/Sindre Sorhus/v), 1);
+	t.is(memoized(/Elvin Peng/v), 2);
+	t.is(memoized(/Elvin Peng/v), 2);
 });
 
 test('memoize with Symbol arguments', t => {
@@ -104,7 +104,7 @@ test('maxAge option deletes old items', async t => {
 	const memoized = memoize(fixture, {maxAge: 100, cache});
 	t.is(memoized(1), 0);
 	t.is(memoized(1), 0);
-	t.is(cache.has(1), true);
+	t.true(cache.has(1));
 	await delay(50);
 	t.is(memoized(1), 0);
 	t.is(deleted.length, 0);
@@ -162,7 +162,7 @@ test('promise support', async t => {
 });
 
 test('preserves the original function name', t => {
-	t.is(memoize(function foo() {}).name, 'foo'); // eslint-disable-line func-names, @typescript-eslint/no-empty-function
+	t.is(memoize(function foo() {}).name, 'foo'); // eslint-disable-line func-names, @stylistic/curly-newline, @typescript-eslint/no-empty-function
 });
 
 test('.clear()', t => {
@@ -220,11 +220,7 @@ test('memoizeDecorator()', t => {
 
 test('memoizeDecorator() does not call getters during decoration', t => {
 	class TestClass {
-		isInitialized = false;
-
-		constructor() {
-			this.isInitialized = true;
-		}
+		isInitialized = true;
 
 		@memoizeDecorator()
 		get value() {
@@ -237,10 +233,8 @@ test('memoizeDecorator() does not call getters during decoration', t => {
 	}
 
 	const instance = new TestClass();
-	t.notThrows(() => {
-		const {value} = instance;
-		t.is(instance.value, value);
-	});
+	const {value} = instance;
+	t.is(instance.value, value);
 });
 
 test('memoizeDecorator() applies options to getters', async t => {
@@ -294,7 +288,7 @@ test('memoizeDecorator() works with static methods', t => {
 		}
 	}
 
-	class ChildClass extends BaseClass {}
+	class ChildClass extends BaseClass {} // eslint-disable-line @stylistic/curly-newline
 
 	t.false(Object.hasOwn(ChildClass, 'nextValue'));
 
@@ -326,7 +320,7 @@ test('memoizeDecorator() keeps static method caches isolated per receiver', t =>
 		}
 	}
 
-	class ChildClass extends BaseClass {}
+	class ChildClass extends BaseClass {} // eslint-disable-line @stylistic/curly-newline
 
 	t.not(BaseClass.nextValue, ChildClass.nextValue);
 	t.is(BaseClass.nextValue('a'), 'BaseClass-a-1');
@@ -354,8 +348,9 @@ test('memoizeDecorator() preserves late binding for deep static inheritance', t 
 		}
 	}
 
-	class ChildClass extends BaseClass {}
-	class GrandChildClass extends ChildClass {}
+	class ChildClass extends BaseClass {} // eslint-disable-line @stylistic/curly-newline
+
+	class GrandChildClass extends ChildClass {} // eslint-disable-line @stylistic/curly-newline
 
 	t.is(ChildClass.nextValue('a'), 'ChildClass-a-1');
 	t.is(ChildClass.nextValue('a'), 'ChildClass-a-1');
@@ -420,9 +415,9 @@ test('memoizeDecorator() installs instance methods as non-enumerable own propert
 
 	const descriptor = Object.getOwnPropertyDescriptor(instance, 'nextValue');
 	t.truthy(descriptor);
-	t.is(descriptor?.enumerable, false);
-	t.is(descriptor?.configurable, true);
-	t.is(descriptor?.writable, true);
+	t.false(descriptor?.enumerable);
+	t.true(descriptor?.configurable);
+	t.true(descriptor?.writable);
 });
 
 test('memoizeDecorator() keeps instance method caches isolated per instance', t => {
@@ -463,7 +458,7 @@ test('memoizeDecorator() memoizes inherited methods per instance', t => {
 		}
 	}
 
-	class ChildClass extends BaseClass {}
+	class ChildClass extends BaseClass {} // eslint-disable-line @stylistic/curly-newline
 
 	const baseInstance = new BaseClass();
 	const childInstance = new ChildClass();
@@ -621,7 +616,7 @@ test('memoizeDecorator() utilities work with extracted static methods', t => {
 		}
 	}
 
-	class ChildClass extends BaseClass {}
+	class ChildClass extends BaseClass {} // eslint-disable-line @stylistic/curly-newline
 
 	const {nextValue} = ChildClass;
 
@@ -772,7 +767,7 @@ test('memoizeIsCached() works with memoizeDecorator()', t => {
 
 test('memoizeClear() throws when called with a plain function', t => {
 	t.throws(() => {
-		memoizeClear(() => {}); // eslint-disable-line @typescript-eslint/no-empty-function
+		memoizeClear(() => {}); // eslint-disable-line @stylistic/curly-newline, @typescript-eslint/no-empty-function
 	}, {
 		message: 'Can\'t clear a function that was not memoized!',
 		instanceOf: TypeError,
@@ -865,13 +860,13 @@ test('memoizeIsCached() checks if arguments are cached', t => {
 	const fixture = (a?: unknown) => index++;
 	const memoized = memoize(fixture);
 
-	t.is(memoizeIsCached(memoized, 1), false);
+	t.false(memoizeIsCached(memoized, 1));
 	memoized(1);
-	t.is(memoizeIsCached(memoized, 1), true);
-	t.is(memoizeIsCached(memoized, 2), false);
+	t.true(memoizeIsCached(memoized, 1));
+	t.false(memoizeIsCached(memoized, 2));
 	memoized(2);
-	t.is(memoizeIsCached(memoized, 2), true);
-	t.is(memoizeIsCached(memoized, 1), true);
+	t.true(memoizeIsCached(memoized, 2));
+	t.true(memoizeIsCached(memoized, 1));
 });
 
 test('memoizeIsCached() works with custom cacheKey', t => {
@@ -879,11 +874,11 @@ test('memoizeIsCached() works with custom cacheKey', t => {
 	const fixture = (a?: unknown, b?: unknown) => index++;
 	const memoized = memoize(fixture, {cacheKey: JSON.stringify});
 
-	t.is(memoizeIsCached(memoized, 1, 2), false);
+	t.false(memoizeIsCached(memoized, 1, 2));
 	memoized(1, 2);
-	t.is(memoizeIsCached(memoized, 1, 2), true);
-	t.is(memoizeIsCached(memoized, 1, 3), false);
-	t.is(memoizeIsCached(memoized, 2, 1), false);
+	t.true(memoizeIsCached(memoized, 1, 2));
+	t.false(memoizeIsCached(memoized, 1, 3));
+	t.false(memoizeIsCached(memoized, 2, 1));
 });
 
 test('memoizeIsCached() with maxAge', async t => {
@@ -891,11 +886,11 @@ test('memoizeIsCached() with maxAge', async t => {
 	const fixture = (a?: unknown) => index++;
 	const memoized = memoize(fixture, {maxAge: 100});
 
-	t.is(memoizeIsCached(memoized, 1), false);
+	t.false(memoizeIsCached(memoized, 1));
 	memoized(1);
-	t.is(memoizeIsCached(memoized, 1), true);
+	t.true(memoizeIsCached(memoized, 1));
 	await delay(150);
-	t.is(memoizeIsCached(memoized, 1), false);
+	t.false(memoizeIsCached(memoized, 1));
 });
 
 test('memoizeIsCached() when maxAge is 0', t => {
@@ -904,14 +899,14 @@ test('memoizeIsCached() when maxAge is 0', t => {
 	const memoized = memoize(fixture, {maxAge: 0});
 
 	memoized(1);
-	t.is(memoizeIsCached(memoized, 1), false);
+	t.false(memoizeIsCached(memoized, 1));
 	memoized(2);
-	t.is(memoizeIsCached(memoized, 2), false);
+	t.false(memoizeIsCached(memoized, 2));
 });
 
 test('memoizeIsCached() returns false for non-memoized functions', t => {
 	const fixture = (a?: unknown) => a;
-	t.is(memoizeIsCached(fixture, 1), false);
+	t.false(memoizeIsCached(fixture, 1));
 });
 
 test('memoizeIsCached() handles same function memoized with different options', t => {
@@ -926,12 +921,12 @@ test('memoizeIsCached() handles same function memoized with different options', 
 	memoized2(1, 2);
 
 	// Default cacheKey only considers first argument
-	t.is(memoizeIsCached(memoized1, 1, 2), true);
-	t.is(memoizeIsCached(memoized1, 1, 3), true); // Still cached (same first argument)
+	t.true(memoizeIsCached(memoized1, 1, 2));
+	t.true(memoizeIsCached(memoized1, 1, 3)); // Still cached (same first argument)
 
 	// JSON.stringify considers all arguments
-	t.is(memoizeIsCached(memoized2, 1, 2), true);
-	t.is(memoizeIsCached(memoized2, 1, 3), false); // Not cached (different arguments)
+	t.true(memoizeIsCached(memoized2, 1, 2));
+	t.false(memoizeIsCached(memoized2, 1, 3)); // Not cached (different arguments)
 });
 
 test('maxAge - zero maxAge means no caching', t => {

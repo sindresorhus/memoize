@@ -2,8 +2,5 @@
 	"extends": "@sindresorhus/tsconfig",
 	"files": [
 		"index.ts"
-	],
-	"ts-node": {
-		"transpileOnly": true
-	}
+	]
 }

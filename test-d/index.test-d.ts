@@ -10,17 +10,13 @@ expectType<boolean>(memoizeIsCached(memoized, 'test'));
 
 expectType<typeof function_>(memoize(function_, {maxAge: 1}));
 expectType<typeof function_>(memoize(function_, {cacheKey: ([firstArgument]: [string]) => firstArgument}));
-expectType<typeof function_>(
-	memoize(function_, {
-		// The cacheKey returns an array. This isn't deduplicated by a regular Map, but it's valid. The correct solution would be to use ManyKeysMap to deduplicate it correctly
-		cacheKey: (arguments_: [string]) => arguments_,
-		cache: new Map<[string], {data: boolean; maxAge: number}>(),
-	}),
-);
-expectType<typeof function_>(
-	// The `firstArgument` of `fn` is of type `string`, so it's used
-	memoize(function_, {cache: new Map<string, {data: boolean; maxAge: number}>()}),
-);
+expectType<typeof function_>(memoize(function_, {
+	// The cacheKey returns an array. This isn't deduplicated by a regular Map, but it's valid. The correct solution would be to use ManyKeysMap to deduplicate it correctly
+	cacheKey: (arguments_: [string]) => arguments_,
+	cache: new Map<[string], {data: boolean; maxAge: number}>(),
+}));
+// The `firstArgument` of `fn` is of type `string`, so it's used
+expectType<typeof function_>(memoize(function_, {cache: new Map<string, {data: boolean; maxAge: number}>()}));
 
 /* Overloaded function tests */
 function overloadedFunction(parameter: false): false;
@@ -48,7 +44,7 @@ memoize((text: string) => Boolean(text), {
 
 memoize(() => 1, {
 	cacheKey(arguments_) {
-		expectType<[]>(arguments_); // eslint-disable-line @typescript-eslint/ban-types
+		expectType<[]>(arguments_); // eslint-disable-line @typescript-eslint/no-restricted-types
 	},
 });
 
