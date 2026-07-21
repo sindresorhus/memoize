@@ -9,6 +9,28 @@ const cacheStore = new WeakMap<AnyFunction, CacheLike<unknown, unknown>>();
 const cacheTimerStore = new WeakMap<AnyFunction, Set<Timer>>();
 const cacheKeyStore = new WeakMap<AnyFunction, (arguments_: readonly any[]) => unknown>();
 
+declare const memoizedBrand: unique symbol;
+
+/**
+A function that has been verified as memoized by `isMemoized()`.
+
+Use it to accept only memoized functions. Since `memoize()` mimics the given function entirely, the only way to get this type is through the `isMemoized()` guard.
+
+@example
+```
+import memoize, {isMemoized, type Memoized} from 'memoize';
+
+const use = (function_: Memoized<(text: string) => boolean>) => function_('foo');
+
+const memoized = memoize((text: string) => Boolean(text));
+
+if (isMemoized(memoized)) {
+	use(memoized);
+}
+```
+*/
+export type Memoized<FunctionToMemoize extends AnyFunction> = FunctionToMemoize & {readonly [memoizedBrand]: true};
+
 export type CacheItem<ValueType> = {
 	data: ValueType;
 	maxAge: number;
@@ -122,8 +144,7 @@ function getPropertyDescriptor(object: WeakKey, property: string | symbol): Prop
 			return descriptor;
 		}
 
-		const prototype: unknown = Object.getPrototypeOf(currentObject);
-		currentObject = prototype === null ? undefined : prototype as WeakKey;
+		currentObject = (Object.getPrototypeOf(currentObject) ?? undefined) as WeakKey | undefined;
 	}
 
 	return undefined;
@@ -430,4 +451,29 @@ export function memoizeIsCached<FunctionToMemoize extends AnyFunction>(
 	const key = cacheKey(arguments_);
 	const item = getValidCacheItem(cache, key);
 	return item !== undefined;
+}
+
+/**
+Check whether a function is memoized.
+
+@param function_ - The function to check.
+@returns `true` if the function was returned by `memoize()`, `false` otherwise.
+
+Note: `memoize()` returns the given function unchanged when the `maxAge` option is `0` or negative, as nothing is cached. Such a function is correctly reported as not memoized.
+
+@example
+```
+import memoize, {isMemoized} from 'memoize';
+
+const function_ = (text: string) => Boolean(text);
+
+isMemoized(memoize(function_));
+//=> true
+
+isMemoized(function_);
+//=> false
+```
+*/
+export function isMemoized<FunctionToMemoize extends AnyFunction>(function_: FunctionToMemoize): function_ is Memoized<FunctionToMemoize> {
+	return cacheStore.has(function_);
 }

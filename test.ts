@@ -1,7 +1,12 @@
 import test from 'ava';
 import delay from 'delay';
 import serializeJavascript from 'serialize-javascript';
-import memoize, {memoizeDecorator, memoizeClear, memoizeIsCached} from './index.js';
+import memoize, {
+	memoizeDecorator,
+	memoizeClear,
+	memoizeIsCached,
+	isMemoized,
+} from './index.js';
 
 test('memoize', t => {
 	let index = 0;
@@ -1121,4 +1126,29 @@ test('very short maxAge expiration', async t => {
 	// After expiration
 	await delay(15);
 	t.is(memoized('a'), 1);
+});
+
+test('isMemoized()', t => {
+	const fixture = (value?: unknown) => 42;
+
+	t.true(isMemoized(memoize(fixture)));
+	t.false(isMemoized(fixture));
+
+	// `memoize()` returns the function unchanged when nothing is cached
+	t.false(isMemoized(memoize(fixture, {maxAge: 0})));
+});
+
+test('isMemoized() with decorated methods', t => {
+	class TestClass {
+		index = 0;
+
+		@memoizeDecorator()
+		counter() {
+			return ++this.index;
+		}
+	}
+
+	const instance = new TestClass();
+	t.true(isMemoized(instance.counter));
+	t.false(isMemoized(TestClass.prototype.counter));
 });

@@ -297,6 +297,47 @@ Type: `Function`
 
 The memoized function.
 
+### isMemoized(fn)
+
+Check whether a function is memoized.
+
+Returns `true` if the function was returned by `memoize()`, `false` otherwise.
+
+> [!NOTE]
+> `memoize()` returns the given function unchanged when the `maxAge` option is `0` or negative, as nothing is cached. Such a function is correctly reported as not memoized.
+
+```js
+import memoize, {isMemoized} from 'memoize';
+
+const function_ = (text) => Boolean(text);
+
+isMemoized(memoize(function_));
+//=> true
+
+isMemoized(function_);
+//=> false
+```
+
+In TypeScript, it narrows the function to the `Memoized` type, which lets you accept only memoized functions:
+
+```ts
+import memoize, {isMemoized, type Memoized} from 'memoize';
+
+const use = (function_: Memoized<(text: string) => boolean>) => function_('foo');
+
+const memoized = memoize((text: string) => Boolean(text));
+
+if (isMemoized(memoized)) {
+	use(memoized);
+}
+```
+
+#### fn
+
+Type: `Function`
+
+The function to check.
+
 #### arguments
 
 The arguments to check.
