@@ -123,7 +123,7 @@ function getPropertyDescriptor(object: WeakKey, property: string | symbol): Prop
 		}
 
 		const prototype: unknown = Object.getPrototypeOf(currentObject);
-		currentObject = prototype === null ? undefined : prototype as WeakKey;
+		currentObject = prototype === null ? undefined : prototype;
 	}
 
 	return undefined;
@@ -173,6 +173,10 @@ export default function memoize<
 		if (maxAge <= 0) {
 			return function_;
 		}
+	}
+
+	if (!cacheKey && function_.length > 1) {
+		console.warn(`The memoized function accepts ${function_.length} parameters, but only the first one is considered by default. Set the \`cacheKey\` option to silence this warning or see: https://github.com/sindresorhus/memoize#caching-strategy`);
 	}
 
 	const memoized = function (this: any, ...arguments_: Parameters<FunctionToMemoize>): ReturnType<FunctionToMemoize> {
