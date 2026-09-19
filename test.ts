@@ -3,6 +3,28 @@ import delay from 'delay';
 import serializeJavascript from 'serialize-javascript';
 import memoize, {memoizeDecorator, memoizeClear, memoizeIsCached} from './index.js';
 
+test.serial('warns when multiple parameters use the default cache key', t => {
+	const warnings: unknown[][] = [];
+	const originalWarn = console.warn;
+	console.warn = (...arguments_) => {
+		warnings.push(arguments_);
+	};
+
+	try {
+		const memoized = memoize((first: number, second: number) => first + second);
+		memoized(1, 2);
+		memoized(1, 3);
+		memoize((value: number) => value);
+		memoize((first: number, second: number) => first + second, {cacheKey: JSON.stringify});
+
+		t.deepEqual(warnings, [[
+			'The memoized function accepts 2 parameters, but only the first one is considered by default. Set the `cacheKey` option to silence this warning or see: https://github.com/sindresorhus/memoize#caching-strategy',
+		]]);
+	} finally {
+		console.warn = originalWarn;
+	}
+});
+
 test('memoize', t => {
 	let index = 0;
 	const fixture = (a?: unknown, b?: unknown) => index++;
